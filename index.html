@@ -2,11 +2,19 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- Viewport meta tag for responsiveness -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guardianes del Agua</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Divs for the wave animation -->
+    <div class="ocean">
+      <div class="wave"></div>
+      <div class="wave"></div>
+      <div class="wave"></div>
+    </div>
+
     <button id="export-btn" class="btn">Exportar</button>
 
     <div class="container">
@@ -31,7 +39,7 @@
                 <button class="btn" onclick="goToModule(2)">Continuar</button>
             </div>
 
-            <!-- Módulo 2: Pregunta Medible (antes Módulo 1) -->
+            <!-- Módulo 2: Pregunta Medible -->
             <div id="module-2" class="module card">
                 <h2>Misión 1: La Pregunta Clave</h2>
                 <p>Observa tu entorno. Formula una pregunta **medible** sobre el consumo de agua que puedas investigar. Por ejemplo: "¿Cuántos litros de agua se usan en mi casa al ducharse durante una semana?"</p>
@@ -39,7 +47,7 @@
                 <button id="validate-btn" class="btn">Validar mi Pregunta</button>
             </div>
 
-            <!-- Módulo 3: Recolección de Datos (antes Módulo 2) -->
+            <!-- Módulo 3: Recolección de Datos -->
             <div id="module-3" class="module card">
                 <h2>Misión 2: En Busca de Evidencia</h2>
                 <p>¡Pregunta aprobada! Ahora, investiga y anota tus hallazgos. ¿Cuál es la respuesta a tu pregunta?</p>
@@ -47,7 +55,7 @@
                 <button class="btn" onclick="goToModule(4)">Siguiente Misión</button>
             </div>
 
-            <!-- Módulo 4: Conclusión (antes Módulo 3) -->
+            <!-- Módulo 4: Conclusión -->
             <div id="module-4" class="module card">
                 <h2>Misión Final: El Plan de Acción</h2>
                 <p>Basado en tus hallazgos, ¿qué pequeña acción puedes tomar para reducir el consumo de agua?</p>
