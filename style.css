@@ -1,0 +1,111 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 2rem;
+    /* New Gradient: Blues and Greens */
+    background: linear-gradient(-45deg, #0d47a1, #42a5f5, #a5d6a7, #2e7d32);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+}
+
+h1, h2 {
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Card keeps the original blue glow */
+.card {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #00BFFF; /* Cian brillante */
+    box-shadow: 0 0 5px #00BFFF, 0 0 10px #00BFFF, inset 0 0 5px #00BFFF;
+    backdrop-filter: blur(5px);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* Buttons get a new distinct style */
+.btn {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #FFC107; /* Gold color */
+    box-shadow: 0 0 3px #FFC107, 0 0 8px #FFC107, inset 0 0 3px #FFC107;
+    backdrop-filter: blur(5px);
+    border-radius: 12px;
+    padding: 1rem 1.5rem; /* Adjusted padding */
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+.btn:hover {
+    /* Brighter yellow/white glow on hover */
+    box-shadow: 0 0 8px #FFEB3B, 0 0 15px #FFEB3B, inset 0 0 8px #FFEB3B;
+    transform: scale(1.05);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.module { display: none; }
+
+.active-module {
+    display: block;
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+#export-btn {
+    position: fixed;
+    top: 15px; /* Adjusted position */
+    right: 15px; /* Adjusted position */
+    z-index: 1000;
+    /* Make it smaller */
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    margin: 0; /* Override other margin */
+}
+
+textarea, input[type="text"] {
+    width: 80%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #00BFFF;
+    background: rgba(0, 0, 0, 0.5);
+    color: #FFFFFF;
+    font-size: 1rem;
+    margin-top: 1rem;
+    min-height: 100px;
+}
+
+/* Style for the new input fields */
+input[type="text"] {
+    min-height: auto; /* Override min-height from textarea */
+    margin-bottom: 1rem; /* Add some space between inputs */
+}
