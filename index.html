@@ -2,13 +2,21 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport meta tag for responsiveness -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guardianes del Agua</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Divs for the wave animation -->
+    <!-- Logo de la escuela para animación y marca de agua -->
+    <img id="school-logo" src="Logos de la escuela..png" alt="Logo de la Escuela">
+
+    <!-- Pantalla de Introducción -->
+    <div id="splash-screen">
+        <h1 id="splash-text"></h1>
+        <img id="prof-logo" src="logohugo.png" alt="Logo del Profesor">
+    </div>
+
+    <!-- Fondo de Olas -->
     <div class="ocean">
       <div class="wave"></div>
       <div class="wave"></div>
@@ -35,8 +43,15 @@
                 <h2>Identificación del Equipo</h2>
                 <p>Antes de empezar, registra la información de tu equipo.</p>
                 <input type="text" id="team-name" placeholder="Nombre del equipo...">
-                <input type="text" id="group-name" placeholder="Grupo...">
-                <button class="btn" onclick="goToModule(2)">Continuar</button>
+                <select id="group-name">
+                    <option value="" disabled selected>Selecciona un grupo</option>
+                    <option value="2A">Grupo de segundo A</option>
+                    <option value="2B">Grupo de segundo B</option>
+                    <option value="2C">Grupo de segundo C</option>
+                    <option value="2D">Grupo de segundo D</option>
+                    <option value="1D">Grupo de primero D</option>
+                </select>
+                <button class="btn" onclick="validateIdentification()">Continuar</button>
             </div>
 
             <!-- Módulo 2: Pregunta Medible -->
