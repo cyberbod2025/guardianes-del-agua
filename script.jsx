@@ -1,5 +1,5 @@
 // 1. ESTADO Y CONSTANTES
-const apiKey = "AIzaSyDFyLAbPJRYEQicolBGIMs0cXKHLNSIOnM"; // ¡Recuerda mantener tu clave segura!
+const apiKey = "AIzaSyDFyLAbPJRYEQicolBGIMs0cXKHLNSIOnM"; // ¡Recuerda mantener tu clave segura!{
 const state = {
     currentModule: 0,
     teamName: "",
@@ -10,7 +10,8 @@ const state = {
 };
 
 // Función de máquina de escribir mejorada para que sea asíncrona
-function typewriter(textElement, text, speed = 75) {
+// Función de máquina de escribir mejorada para que sea asíncrona
+function typewriter(...args: [textElement: any, text: any, speed: any]) {
     return new Promise(resolve => {
         let i = 0;
         textElement.innerHTML = "";
@@ -223,7 +224,7 @@ async function validateWithGemini(studentResponse, contextPrompt) {
     return result.candidates[0].content.parts[0].text;
 }
 
-function exportEvidence(...args) {
+function exportEvidence() {
     saveState();
 
     const { teamName, groupName, studentQuestion, studentFindings, studentAction } = state;
@@ -262,5 +263,4 @@ function exportEvidence(...args) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
-    } `;
-}
+    } 

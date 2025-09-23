@@ -18,10 +18,18 @@ body {
     z-index: 10000;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(1);
+    /* Estado inicial para la animación de entrada */
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
     max-width: 70vw;
     max-height: 70vh;
+    /* La transición ahora maneja la entrada y la animación a marca de agua */
     transition: all 2s ease-in-out;
+}
+
+#school-logo.visible {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
 }
 
 #school-logo.watermark {
@@ -37,9 +45,9 @@ body {
 }
 
 @keyframes swirl {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% { background-position: 0% 50%; background-size: 300% 300%; }
+    50% { background-position: 100% 50%; background-size: 400% 400%; }
+    100% { background-position: 0% 50%; background-size: 300% 300%; }
 }
 
 #splash-screen {
@@ -50,7 +58,7 @@ body {
     height: 100vh;
     background: radial-gradient(ellipse at center, #42a5f5 0%, #0d47a1 70%, #002171 100%);
     background-size: 300% 300%;
-    animation: swirl 10s ease infinite;
+    animation: swirl 8s ease infinite;
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -60,14 +68,22 @@ body {
     transition: opacity 1s ease-out;
 }
 
+@keyframes subtle-sparkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
 #splash-text {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    color: #FFD700; /* Color amarillo dorado, sin brillo */
+    color: #FFD700; /* Amarillo dorado */
     font-size: clamp(1.5rem, 4vw, 2.8rem);
     font-weight: bold;
     padding: 20px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+    /* Brillo sutil */
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.7), 0 0 10px rgba(255, 215, 0, 0.5);
+    animation: subtle-sparkle 2.5s ease-in-out infinite;
 }
 
 #prof-logo {
@@ -75,11 +91,13 @@ body {
     bottom: 5%;
     max-width: 350px;
     opacity: 0;
-    transition: opacity 1s ease-in-out;
+    transform: scale(0.9);
+    transition: all 1s ease-in-out;
 }
 
 #prof-logo.visible {
     opacity: 1;
+    transform: scale(1);
 }
 
 /* --- WAVE ANIMATION --- */
