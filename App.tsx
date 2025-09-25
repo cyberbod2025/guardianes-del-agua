@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
 import useLocalStorage from './hooks/useLocalStorage';
-import type { TeamInfo, TeamProgress, ModuleData, ModuleStatus } from './types';
+import type { TeamProgress, ModuleData, ModuleStatus } from './types';
 import { MODULES } from './constants';
 import ProgressBar from './components/ProgressBar';
 import Module from './components/Module';
 import { TrophyIcon } from './components/Icons';
+
+type TeamInfo = {
+  teamName: string;
+  schoolName: string;
+  grade: string;
+  mentorName: string;
+  members: string[];
+};
 
 const INITIAL_PROGRESS: TeamProgress = {
   completedModules: 0,

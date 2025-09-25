@@ -1,14 +1,5 @@
 import React from 'react';
 
-// Information captured for a team at login/registro stage
-export interface TeamInfo {
-  teamName: string;
-  schoolName: string;
-  grade: string;
-  mentorName: string;
-  members: string[];
-}
-
 // Defines the structure for a single field in a module form
 export type FormField = FormInput | FormDisplay;
 
