@@ -1,30 +1,30 @@
 import React, { useState } from 'react';
 import type { ModuleContent, ModuleStatus, ModuleData, FormField, FormInput } from '../types';
-import { LockClosedIcon, CheckCircleIcon, WaterDropIcon, RocketIcon, SparklesIcon, TeamIcon, PlanIcon } from './Icons';
+import { LockClosedIcon, CheckCircleIcon, WaterDropIcon, RocketIcon, SparklesIcon, TeamIcon, PlanIcon, ExperimentIcon } from './Icons';
 
 interface ModuleProps {
   module: ModuleContent;
   status: ModuleStatus;
   savedData: ModuleData | undefined;
   onComplete: (moduleId: number, data: ModuleData) => void;
+  onSaveProgress: (moduleId: number, data: ModuleData) => void;
 }
 
 const ICONS: { [key: string]: React.FC<{className?: string}> } = {
   TeamIcon,
   PlanIcon,
   WaterDropIcon,
+  ExperimentIcon,
 };
 
-const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete }) => {
+const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, onSaveProgress }) => {
   const [formData, setFormData] = useState<ModuleData>(savedData || {});
   const [isLoading, setIsLoading] = useState(false);
-  const [aiFeedback, setAiFeedback] = useState<{ isSufficient: boolean, feedback: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
-    setAiFeedback(null);
     setError(null);
   };
 
@@ -36,8 +36,21 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete }
     } else {
       setFormData((prev) => ({ ...prev, [id]: currentValues.filter((v) => v !== value) }));
     }
-    setAiFeedback(null);
     setError(null);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, files } = e.target;
+    if (files && files.length > 0) {
+      setFormData((prev) => ({ ...prev, [id]: files[0] }));
+    } else {
+      setFormData((prev) => ({ ...prev, [id]: null }));
+    }
+    setError(null);
+  };
+
+  const handleSaveClick = () => {
+    onSaveProgress(module.id, formData);
   };
 
   const getInputFields = (content: FormField[]): FormInput[] => {
@@ -46,78 +59,50 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete }
       field.type === 'textarea' || 
       field.type === 'checkbox' || 
       field.type === 'radio' || 
-      field.type === 'select'
+      field.type === 'select' ||
+      field.type === 'file'
     ) as FormInput[];
   }
 
-  const getAIFeedback = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
-    setAiFeedback(null);
     setError(null);
 
+    const updatedFormData = { ...formData };
+    const fileFields = getInputFields(module.content).filter(f => f.type === 'file');
+
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      if (!apiKey) {
-        setError("Error de configuración: La clave API de Google (VITE_GEMINI_API_KEY) no se ha proporcionado en el archivo .env. El administrador debe configurar esta variable de entorno para que Mentor Aqua pueda funcionar.");
-        setIsLoading(false);
-        return;
+      // Upload files first
+      for (const field of fileFields) {
+        const file = formData[field.id];
+        if (file instanceof File) {
+          const formDataForUpload = new FormData();
+          formDataForUpload.append('file', file);
+
+          const response = await fetch('http://localhost:3001/upload', {
+            method: 'POST',
+            body: formDataForUpload,
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error al subir el archivo: ${file.name}`);
+          }
+
+          const result = await response.json();
+          updatedFormData[field.id] = result.filePath; // Replace file with path
+        }
       }
 
-      const { GoogleGenerativeAI } = await import('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+      // Once all files are uploaded and paths are updated, complete the module
+      onComplete(module.id, updatedFormData);
 
-      const inputFields = getInputFields(module.content);
-      const userAnswers = inputFields.map(field => {
-        const answer = formData[field.id];
-        const formattedAnswer = Array.isArray(answer) ? answer.join(', ') : answer;
-        return `${field.label}\n${formattedAnswer || '(Sin respuesta)'}`;
-      }).join('\n\n');
-
-      const prompt = `
-        Actúa como "Mentor Aqua", un asistente de IA experto y motivador para estudiantes de secundaria en un proyecto STEAM sobre el agua.
-
-        **Contexto del Proyecto:**
-        Los estudiantes están en el Módulo ${module.id}: "${module.title}".
-        El objetivo de este módulo es: "${module.description}".
-
-        **Respuestas del Estudiante:**
-        ${userAnswers}
-
-        **Tu Misión:**
-        1. Evalúa si las respuestas del estudiante demuestran un esfuerzo razonable y están en la dirección correcta para su nivel (1º-2º de secundaria). No busques perfección, sino comprensión y compromiso.
-        2. Proporciona feedback constructivo y motivador usando un tono socrático (haciendo preguntas que guíen).
-        3. Decide si el esfuerzo es suficiente para desbloquear el siguiente módulo.
-
-        **Formato de Respuesta Obligatorio:**
-        Responde EXCLUSIVAMENTE con un objeto JSON que siga este esquema: { "isSufficient": boolean, "feedback": "string" }. No incluyas texto, saltos de línea, ni markdown antes o después del JSON.
-      `;
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      const cleanedJson = text.replace(/\`\`\`json|\`\`\`/g, '').trim();
-      const resultJson = JSON.parse(cleanedJson);
-      
-      setAiFeedback(resultJson);
-
-      if (resultJson.isSufficient) {
-        setTimeout(() => {
-          onComplete(module.id, formData);
-        }, 2000); 
-      }
     } catch (e) {
       console.error(e);
-      setError("Hubo un error al contactar a Mentor Aqua. Por favor, revisa tu conexión e intenta de nuevo más tarde.");
+      setError(e instanceof Error ? e.message : "Ocurrió un error al subir los archivos.");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    getAIFeedback();
   };
 
   const isCompletable = () => {
@@ -127,12 +112,14 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete }
       if (field.type === 'checkbox') {
         return Array.isArray(value) && value.length > 0;
       }
-      return value && (value as string).trim() !== '';
+      if (field.type === 'file') {
+        return value instanceof File;
+      }
+      return value && String(value).trim() !== '';
     });
   }
 
   const renderField = (field: FormField) => {
-    // ... (renderField implementation remains the same)
     switch (field.type) {
       case 'header':
         return <h3 key={field.id} className="text-lg font-semibold text-gray-800 mt-6 mb-2 border-b pb-2">{field.text}</h3>;
@@ -235,6 +222,21 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete }
             </select>
           </div>
         );
+      case 'file':
+        const file = formData[field.id];
+        return (
+          <div key={field.id}>
+            <label htmlFor={field.id} className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+            <input
+              type="file"
+              id={field.id}
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              onChange={handleFileChange}
+              required
+            />
+            {file instanceof File && <p className="text-xs text-gray-500 mt-1">Archivo seleccionado: {file.name}</p>}
+          </div>
+        );
       default:
         return null;
     }
@@ -268,29 +270,26 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete }
           <form onSubmit={handleSubmit} className="space-y-6">
             {module.content.map((field) => renderField(field))}
             
-            {aiFeedback && (
-              <div className={`p-4 rounded-md flex items-start space-x-3 ${aiFeedback.isSufficient ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                <SparklesIcon className="h-6 w-6 flex-shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-bold">Feedback de Mentor Aqua:</h4>
-                  <p className="text-sm">{aiFeedback.feedback}</p>
-                </div>
-              </div>
-            )}
-            
             {error && (
               <div className="p-4 rounded-md bg-red-100 text-red-800">
                 <p>{error}</p>
               </div>
             )}
 
-            <div className="flex justify-end pt-4">
+            <div className="flex items-center justify-end gap-x-4 pt-4">
+               <button
+                type="button"
+                onClick={handleSaveClick}
+                className="text-sm font-medium text-gray-600 hover:text-gray-800"
+              >
+                Guardar Progreso
+              </button>
               <button
                 type="submit"
                 disabled={!isCompletable() || isLoading}
                 className="inline-flex items-center gap-x-2 px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#007BFF] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007BFF] disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200"
               >
-                {isLoading ? 'Analizando...' : <> <RocketIcon className="h-5 w-5"/> Completar y Validar </>}
+                {isLoading ? 'Subiendo y Validando...' : <> <RocketIcon className="h-5 w-5"/> Completar y Validar </>}
               </button>
             </div>
           </form>
@@ -305,7 +304,7 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete }
                 <div key={field.id} className="mb-2">
                   <p className="text-sm font-semibold text-gray-800 capitalize">{field.label}</p>
                   <p className="text-sm text-gray-600 whitespace-pre-wrap">
-                    {Array.isArray(value) ? value.join(', ') : value}
+                    {Array.isArray(value) ? value.join(', ') : (typeof value === 'string' && value.startsWith('/uploads') ? <a href={`http://localhost:3001${value}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Ver archivo</a> : String(value))}
                   </p>
                 </div>
               )

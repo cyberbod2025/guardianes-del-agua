@@ -13,7 +13,7 @@ export interface FormDisplay {
 // Represents fields that require user input
 export interface FormInput {
   id: string;
-  type: 'text' | 'textarea' | 'checkbox' | 'radio' | 'select';
+  type: 'text' | 'textarea' | 'checkbox' | 'radio' | 'select' | 'file';
   label: string;
   placeholder?: string; // Optional for checkbox, radio, select
   options?: string[];   // For checkbox, radio, select
@@ -33,14 +33,18 @@ export type ModuleStatus = 'LOCKED' | 'ACTIVE' | 'COMPLETED';
 
 // Represents the saved data for a module. Can be a string or an array of strings (for checkboxes)
 export interface ModuleData {
-  [key: string]: string | string[];
+  [key: string]: string | string[] | File | null;
 }
+
+export type ApprovalStatus = 'none' | 'pending' | 'approved' | 'rejected';
 
 // Represents the overall progress of a team
 export interface TeamProgress {
   teamId: string;
   teamName: string;
   completedModules: number;
+  approvalStatus: ApprovalStatus;
+  teacherFeedback?: string;
   data: { [moduleId: number]: ModuleData };
 }
 

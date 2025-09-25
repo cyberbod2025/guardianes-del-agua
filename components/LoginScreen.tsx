@@ -10,11 +10,12 @@ interface Database {
 
 interface LoginScreenProps {
   onLogin: (team: Team, progress: TeamProgress) => void;
+  onTeacherLogin: () => void;
 }
 
 type Step = 'askGroup' | 'askName' | 'setTeamName' | 'confirmTeam' | 'error';
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onTeacherLogin }) => {
   const [step, setStep] = useState<Step>('askGroup');
   const [db, setDb] = useState<Database | null>(null);
   const [groups, setGroups] = useState<string[]>([]);
@@ -51,6 +52,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const handleFindTeam = (e: React.FormEvent) => {
     e.preventDefault();
     if (!db || !selectedGroup || !leaderName) return;
+
+    // Check for teacher login
+    if (leaderName.trim() === 'PROFE-ADMIN') {
+      onTeacherLogin();
+      return;
+    }
 
     const teamsInGroup = db[selectedGroup];
     const team = teamsInGroup.find(t => 

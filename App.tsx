@@ -1,105 +1,180 @@
 import React, { useState } from 'react';
 import useLocalStorage from './hooks/useLocalStorage';
-import type { TeamProgress, ModuleData, ModuleStatus } from './types';
+import type { TeamProgress, ModuleData, ModuleStatus, ApprovalStatus, Team } from './types';
 import { MODULES } from './constants';
 import ProgressBar from './components/ProgressBar';
 import Module from './components/Module';
-import { TrophyIcon } from './components/Icons';
+import LoginScreen from './components/LoginScreen';
+import TeacherDashboard from './components/TeacherDashboard';
+import ReviewScreen from './components/ReviewScreen';
+import { TrophyIcon, ClockIcon, ExclamationIcon } from './components/Icons';
 
-type TeamInfo = {
-  teamName: string;
-  schoolName: string;
-  grade: string;
-  mentorName: string;
-  members: string[];
-};
-
-const INITIAL_PROGRESS: TeamProgress = {
-  completedModules: 0,
-  data: {},
-};
+type AppState = 'login' | 'projectJourney' | 'teacherDashboard' | 'reviewScreen';
 
 function App() {
-  const [appState, setAppState] = useState<'intro' | 'login' | 'welcomeMessage' | 'projectJourney'>('intro');
-  const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
-  const [teamProgress, setTeamProgress] = useLocalStorage<TeamProgress>('team-progress', INITIAL_PROGRESS);
+  const [appState, setAppState] = useState<AppState>('login');
+  const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
+  const [reviewingTeamId, setReviewingTeamId] = useState<string | null>(null);
+  const [teamProgress, setTeamProgress] = useLocalStorage<TeamProgress | null>(null);
+
+  const handleLogin = (team: Team, progress: TeamProgress) => {
+    setCurrentTeam(team);
+    setTeamProgress(progress, `progress-${team.id}`);
+    setAppState('projectJourney');
+  };
+
+  const handleTeacherLogin = () => {
+    setAppState('teacherDashboard');
+  };
+
+  const handleSelectTeamForReview = (teamId: string) => {
+    setReviewingTeamId(teamId);
+    setAppState('reviewScreen');
+  };
+
+  const handleBackToDashboard = () => {
+    setReviewingTeamId(null);
+    setAppState('teacherDashboard');
+  };
 
   const handleModuleComplete = (moduleId: number, data: ModuleData) => {
+    if (!teamProgress) return;
     setTeamProgress(prev => {
+      if (!prev) return null;
       const newData = { ...prev.data, [moduleId]: data };
       const newCompletedModules = Math.max(prev.completedModules, moduleId);
+      let newApprovalStatus: ApprovalStatus = prev.approvalStatus;
+
+      if (moduleId === 2) {
+        newApprovalStatus = 'pending';
+      }
+
       return {
+        ...prev,
         completedModules: newCompletedModules,
+        approvalStatus: newApprovalStatus,
         data: newData,
       };
     });
-     // Scroll to the top to see the new active module
-     window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  
-  const handleReset = () => {
-    if(window.confirm("¿Estás seguro de que quieres borrar todo tu progreso? Esta acción no se puede deshacer.")) {
-        setTeamProgress(INITIAL_PROGRESS);
+
+  const handleSaveProgress = (moduleId: number, data: ModuleData) => {
+    if (!teamProgress) return;
+    setTeamProgress(prev => {
+      if (!prev) return null;
+      const newData = { ...prev.data, [moduleId]: data };
+      return {
+        ...prev,
+        data: newData,
+      };
+    });
+    alert("¡Progreso guardado!");
+  };
+
+  const handleLogout = () => {
+    setCurrentTeam(null);
+    setTeamProgress(null);
+    setAppState('login');
+  };
+
+  const handleExport = () => {
+    if (!currentTeam || !teamProgress) return;
+    let content = `Bitácora del Equipo: ${teamProgress.teamName}\n`;
+    content += `Grupo: ${currentTeam.teamNumber}\n`;
+    content += `----------------------------------------------------\n\n`;
+
+    MODULES.forEach(module => {
+      const moduleData = teamProgress.data[module.id];
+      content += `MÓDULO ${module.id}: ${module.title}\n`;
+      content += `--------------------------------------\n`;
+      if (moduleData) {
+        const moduleFields = MODULES.find(m => m.id === module.id)?.content.filter(f => f.type !== 'header' && f.type !== 'info') || [];
+        moduleFields.forEach(field => {
+            const answer = moduleData[(field as any).id];
+            if(answer !== undefined) {
+                content += `${(field as any).label}:\n${Array.isArray(answer) ? answer.join(', ') : answer}\n\n`;
+            }
+        });
+      } else {
+        content += "Módulo no completado o sin datos guardados.\n\n";
+      }
+    });
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `bitacora_${teamProgress.teamName.replace(/\s+/g, '_')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const renderProjectJourney = () => {
+    if (!currentTeam || !teamProgress) {
+      if(appState !== 'login') handleLogout();
+      return null;
     }
+
+    const isProjectComplete = teamProgress.completedModules >= MODULES.length && teamProgress.approvalStatus === 'approved';
+
+    const getStatusForModule = (moduleIndex: number): ModuleStatus => {
+      const { completedModules, approvalStatus } = teamProgress;
+      const planModuleIndex = 1;
+
+      if (approvalStatus === 'pending' && moduleIndex > planModuleIndex) {
+        return 'LOCKED';
+      }
+
+      if (approvalStatus === 'rejected') {
+        if (moduleIndex === planModuleIndex) return 'ACTIVE';
+        if (moduleIndex > planModuleIndex) return 'LOCKED';
+      }
+      
+      if (moduleIndex < completedModules) {
+        return 'COMPLETED';
+      }
+      
+      if (moduleIndex === completedModules) {
+        return 'ACTIVE';
+      }
+
+      return 'LOCKED';
+    }
+
+    return (
+      <div className="min-h-screen bg-[#F7F9FC] text-[#333333]">
+                <div>
+                  <h3 className="font-bold">El plan necesita ajustes</h3>
+                  <p className="text-sm">Tu profesor ha enviado observaciones. Por favor, revisa los comentarios, ajusta tu Módulo 2 y vuelve a enviarlo.</p>
+                  {teamProgress.teacherFeedback && (
+                    <div className="mt-2 p-3 bg-red-50 rounded-md border border-red-200">
+                        <p className="text-sm font-semibold">Comentarios del profesor:</p>
+                        <p className="text-sm whitespace-pre-wrap">{teamProgress.teacherFeedback}</p>
+                    </div>
+                  )}
+                </div>
+      </div>
+    );
   }
 
-  const currentModuleIndex = teamProgress.completedModules;
-  const isProjectComplete = currentModuleIndex >= MODULES.length;
+  const renderContent = () => {
+    switch (appState) {
+      case 'login':
+        return <LoginScreen onLogin={handleLogin} onTeacherLogin={handleTeacherLogin} />;
+      case 'projectJourney':
+        return renderProjectJourney();
+      case 'teacherDashboard':
+        return <TeacherDashboard onReviewTeam={handleSelectTeamForReview} />;
+      case 'reviewScreen':
+        if (!reviewingTeamId) return <p>Error: No team selected for review.</p>;
+        return <ReviewScreen teamId={reviewingTeamId} onBack={handleBackToDashboard} />;
+      default:
+        return <p>Cargando...</p>;
+    }
+  };
 
-  return (
-    <div className="min-h-screen bg-[#F7F9FC] text-[#333333]">
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-extrabold text-[#007BFF]">Guardianes del Agua</h1>
-            <p className="text-gray-500 mt-1 text-sm">Proyecto STEAM | Mentor Aqua 🤖</p>
-          </div>
-          <button 
-            onClick={handleReset}
-            className="text-xs text-slate-500 hover:text-red-600 hover:underline"
-          >
-            Reiniciar Progreso
-          </button>
-        </div>
-      </header>
-      
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="bg-white rounded-xl shadow-md p-6 mb-12">
-            <ProgressBar modules={MODULES} completedModules={teamProgress.completedModules} />
-        </div>
-        
-        {isProjectComplete ? (
-          <div className="text-center p-10 bg-gradient-to-br from-blue-50 to-green-50 rounded-lg shadow-lg border-l-4 border-[#28A745] flex flex-col items-center">
-            <TrophyIcon className="h-24 w-24 text-yellow-400 animate-pulse" />
-            <h2 className="text-4xl font-bold text-[#28A745] mt-4 mb-4">¡Misión Cumplida!</h2>
-            <p className="text-lg text-slate-700 mb-6 max-w-2xl">¡Felicidades, Guardianes del Agua! Han completado todos los módulos del proyecto. Han demostrado ser excelentes científicos, ingenieros y comunicadores.</p>
-            <p className="text-md text-slate-600 max-w-2xl">Ahora tienen un proyecto increíble basado en evidencia para compartir con su comunidad. ¡El mundo necesita más mentes curiosas como las suyas!</p>
-          </div>
-        ) : (
-            <div className="space-y-8">
-            {MODULES.map((module, index) => {
-                let status: ModuleStatus = 'LOCKED';
-                if (index < currentModuleIndex) {
-                status = 'COMPLETED';
-                } else if (index === currentModuleIndex) {
-                status = 'ACTIVE';
-                }
-
-                return (
-                <Module
-                    key={module.id}
-                    module={module}
-                    status={status}
-                    savedData={teamProgress.data[module.id]}
-                    onComplete={handleModuleComplete}
-                />
-                );
-            })}
-            </div>
-        )}
-      </main>
-    </div>
-  );
+  return renderContent();
 }
 
 export default App;

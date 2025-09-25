@@ -66,4 +66,29 @@ export const MODULES: ModuleContent[] = [
       { id: 'valor_equipo', type: 'select', label: 'Como equipo, elijan el valor más importante que necesitarán para esta misión:', options: ['Paciencia', 'Comunicación', 'Respeto', 'Colaboración', 'Creatividad'] },
     ],
   },
+  {
+    id: 3,
+    title: "Misión 3: Laboratorio de Hidráulica Urbana",
+    description: "¡Manos a la obra! Es hora de construir, experimentar y recolectar datos con tu propia maqueta.",
+    icon: 'ExperimentIcon',
+    content: [
+      { id: 'info_m3_intro', type: 'info', text: 'En esta fase, pasarán de la planificación a la acción. Construirán sus modelos y los pondrán a prueba para generar sus propios datos.' },
+      
+      { id: 'header_diseno', type: 'header', text: 'Momento 1: Diseño y Cálculo (La Mesa del Arquitecto)' },
+      { id: 'boceto_maqueta', type: 'file', label: 'Diseño del Boceto: Tomen una foto clara del boceto detallado de su maqueta que hicieron en su bitácora y súbanla aquí.' },
+      { id: 'calculos_previos', type: 'textarea', label: 'Cálculos y Dimensiones: Anoten aquí los cálculos de área y volumen que realizaron para planificar las dimensiones de su maqueta.', placeholder: 'Ej: Calle: 50cm largo x 20cm ancho. Área total: 1000 cm². Volumen de agua a usar: 500 ml...' },
+      { id: 'variables_medir', type: 'textarea', label: 'Variables a Medir (para 2º Grado): Definan las variables que medirán para su modelo de función lineal.', placeholder: 'Ej: Mediremos la altura del agua (en cm) cada 10 segundos.' },
+  
+      { id: 'header_construccion', type: 'header', text: 'Momento 2: Construcción (Manos a la Obra)' },
+      { id: 'materiales_utilizados', type: 'textarea', label: 'Materiales: Hagan una lista de los materiales (principalmente reciclados) que utilizaron para construir su maqueta.' },
+      { id: 'foto_maqueta_final', type: 'file', label: 'Maqueta Terminada: Suban una o varias fotos de su maqueta ya construida.' },
+  
+      { id: 'header_simulacion', type: 'header', text: 'Momento 3: La Simulación (El Día de la Inundación)' },
+      { id: 'info_error_inteligente', type: 'info', text: '¡Recuerden, Guardianes! Si la maqueta tiene fugas o algo no sale como esperaban, ¡no es un fracaso, es un dato! Anoten todo. El objetivo no es la maqueta perfecta, es el aprendizaje.' },
+      { id: 'cantidad_agua_simulacion', type: 'text', label: 'Cantidad de Agua: Registren la cantidad controlada de agua que verterán sobre la maqueta.', placeholder: 'Ej: 1.5 litros' },
+      { id: 'registro_resultados', type: 'textarea', label: 'Registro de Resultados: Describan sistemáticamente lo que observaron y midieron durante la simulación.', placeholder: 'Ej: Prueba 1: El agua tardó 45 segundos en drenar. Se estancó en la esquina inferior. Profundidad máxima: 2 cm...' },
+      { id: 'foto_video_simulacion', type: 'file', label: 'Evidencia de la Simulación: Suban una foto o un video corto (máximo 1 minuto) del experimento en acción.' },
+      { id: 'conclusiones_experimento', type: 'textarea', label: 'Conclusiones del Experimento: ¿Qué aprendieron de la simulación? ¿Qué funcionó y qué no? ¿Qué mejoras harían?' },
+    ],
+  },
 ];
