@@ -1,307 +1,57 @@
 {
-  "catalogo_proyectos": [
-    {
-      "id": "p01",
-      "titulo": "Análisis de Calidad del Agua Local"
-    },
-    {
-      "id": "p02",
-      "titulo": "Sistema de Riego Eficiente para Jardines Escolares"
-    },
-    {
-      "id": "p03",
-      "titulo": "Campaña de Concientización sobre el Ahorro de Agua"
-    },
-    {
-      "id": "p04",
-      "titulo": "Diseño de un Filtro de Agua Casero"
-    },
-    {
-      "id": "p05",
-      "titulo": "Estudio del Impacto de la Contaminación en Ríos Cercanos"
-    }
-  ],
-  "grupos": {
+  "groups": {
     "1D": {
-      "equipos": {
-        "Equipo 1": [
-          "Alvarez Casasola, Andrea",
-          "Estrada Cuautle, Derek Adonai",
-          "Garcia Arreola, Kevin",
-          "Hernandez Cruz, Victor Daniel",
-          "Lorenzo Rebollo, Yamileth Sarahi",
-          "Treviño Hinojosa, Leobaldo"
-        ],
-        "Equipo 2": [
-          "Alejandro, Demian",
-          "Cuahutle Luengas,",
-          "Espejel Palestina, Kelly Brigitte",
-          "Gonzalez Caldera, Zoe Alexandra",
-          "Hernandez Arteaga,",
-          "Hernandez Lazaro, Ashly",
-          "Perez Serna, Ulises Gael"
-        ],
-        "Equipo 3": [
-          "Cervantes Esquivel,",
-          "Chavez Rosas, Amixi",
-          "Grande Reyes, Diana Paola",
-          "Morales Perez, Kevin Alejandro",
-          "Rivera Vidal, Johan Mateo",
-          "Vargas Rosas, Jibran Jordan",
-          "Galindo Espinosa, Ian Kenneth"
-        ],
-        "Equipo 4": [
-          "Aquino Granados, Iker",
-          "Gonzalez Garcia, Karla Denisse",
-          "Hernandez Rendon, Ashley",
-          "Madrigal De Anda, Samantha Cristal",
-          "Nolasco Manzano, Iker",
-          "Orocio Velazquez, Kymberli"
-        ],
-        "Equipo 5": [
-          "Gomez Varela, Karim",
-          "Maldonado Sandoval,",
-          "Perez Reyes, Valeria",
-          "Pichardo Vargas, Genesis Elim",
-          "Rubio Pacheco, Kevin Yael",
-          "Gomez González, Isabella Dinorah",
-          "Rosales Ramírez, Santiago Arturo"
-        ],
-        "Equipo 6": [
-          "Carranza Martinez,",
-          "Garcia Hernandez,",
-          "Hernandez Sanchez, Erika",
-          "Mendoza Sanchez, Ian",
-          "Ramos Escamilla, Angel Dominick",
-          "Rangel Loera, Dominic Eduardo"
-        ]
-      },
-      "proyectos_asignados": {}
+      "teams": [
+        {"id": 1, "students": [{"name": "Alvarez Casasola, Andrea"}, {"name": "Estrada Cuautle, Derek Adonai"}, {"name": "Garcia Arreola, Kevin"}, {"name": "Hernandez Cruz, Victor Daniel"}, {"name": "Lorenzo Rebollo, Yamileth Sarahi"}, {"name": "Treviño Hinojosa, Leobaldo"}]},
+        {"id": 2, "students": [{"name": "Alejandro, Demian"}, {"name": "Cuahutle Luengas,"}, {"name": "Espejel Palestina, Kelly Brigitte"}, {"name": "Gonzalez Caldera, Zoe Alexandra"}, {"name": "Hernandez Arteaga,"}, {"name": "Hernandez Lazaro, Ashly"}, {"name": "Perez Serna, Ulises Gael"}]},
+        {"id": 3, "students": [{"name": "Cervantes Esquivel,"}, {"name": "Chavez Rosas, Amixi"}, {"name": "Grande Reyes, Diana Paola"}, {"name": "Morales Perez, Kevin Alejandro"}, {"name": "Rivera Vidal, Johan Mateo"}, {"name": "Vargas Rosas, Jibran Jordan"}, {"name": "Galindo Espinosa, Ian Kenneth"}]},
+        {"id": 4, "students": [{"name": "Aquino Granados, Iker"}, {"name": "Gonzalez Garcia, Karla Denisse"}, {"name": "Hernandez Rendon, Ashley"}, {"name": "Madrigal De Anda, Samantha Cristal"}, {"name": "Nolasco Manzano, Iker"}, {"name": "Orocio Velazquez, Kymberli"}]},
+        {"id": 5, "students": [{"name": "Gomez Varela, Karim"}, {"name": "Maldonado Sandoval,"}, {"name": "Perez Reyes, Valeria"}, {"name": "Pichardo Vargas, Genesis Elim"}, {"name": "Rubio Pacheco, Kevin Yael"}, {"name": "Gomez González, Isabella Dinorah"}, {"name": "Rosales Ramírez, Santiago Arturo"}]},
+        {"id": 6, "students": [{"name": "Carranza Martinez,"}, {"name": "Garcia Hernandez,"}, {"name": "Hernandez Sanchez, Erika"}, {"name": "Mendoza Sanchez, Ian"}, {"name": "Ramos Escamilla, Angel Dominick"}, {"name": "Rangel Loera, Dominic Eduardo"}]}
+      ]
     },
     "2A": {
-      "equipos": {
-        "Equipo 1": [
-          "Becerril Flores, Katy Nicol",
-          "Caudillo Flores, Yoali Britzey",
-          "García Calderon, Said Israel",
-          "Lima Cruz, Johan Alexis",
-          "Melchor Arriaga, Dilan Alexis",
-          "Velasco Garduño, Alexander Ismael",
-          "Castro Cuellar, Quetzalli"
-        ],
-        "Equipo 2": [
-          "Castrejón Villalobos, Lian Pio",
-          "Duarte Muñoz, Ian Dariel",
-          "Gaytan Cardoso, Jorlet Nicol",
-          "Mondragón Imbilimbo, Angeles",
-          "Serrano Espinoza, Elias Damian",
-          "Valle De la Rosa, Donovan Michelle"
-        ],
-        "Equipo 3": [
-          "Hernández Rendón, Carlos Ashmel",
-          "Jiménez López, Blanca Isamar",
-          "Rivera Martínez, Ana Marlene",
-          "Rodríguez García, Cesar Alexis",
-          "Royo Julio, Cristian Aron",
-          "Urbano Elizalde, Killian Marti",
-          "Acosta Rodriguez, Dante"
-        ],
-        "Equipo 5": [
-          "García González, Alondra Yamilet",
-          "García Gutiérrez, Maximiliano Mateo",
-          "González, Piedras Jimena",
-          "Isidro, Santiago Alejandro",
-          "Ramírez Narciso, Eva Paola",
-          "Zamora Cortés, Ian Dominic",
-          "Malagon Rosas, Miguel Ángel"
-        ],
-        "Equipo 6": [
-          "Álvarez Terrazas, Víctor Leonardo",
-          "Esquivel Ubaldo, Iker Tadeo",
-          "Gil, Enciso Maricruz",
-          "Sánchez Jimenez, Patricio Samuel",
-          "Sánchez, ParraAndrea Alexandra",
-          "Vázquez Contreras, Aldo Giovanni",
-          "Crespo Álvarez, Uriel"
-        ],
-        "Equipo 7": [
-          "Colula Ortiz, Ariana Yamileth",
-          "Cortés Olvera, Mateo Emiliano",
-          "Hernández Gutiérrez, Gabriel Mateo",
-          "Montalvo Fonseca, Emily Mayleth",
-          "Romero Ordaz, Fátima Yanet",
-          "Arroyo Carrillo, Jonathan Uriel"
-        ]
-      },
-      "proyectos_asignados": {}
+      "teams": [
+        {"id": 1, "students": [{"name": "Becerril Flores, Katy Nicol"}, {"name": "Caudillo Flores, Yoali Britzey"}, {"name": "García Calderon, Said Israel"}, {"name": "Lima Cruz, Johan Alexis"}, {"name": "Melchor Arriaga, Dilan Alexis"}, {"name": "Velasco Garduño, Alexander Ismael"}, {"name": "Castro Cuellar, Quetzalli"}]},
+        {"id": 2, "students": [{"name": "Castrejón Villalobos, Lian Pio"}, {"name": "Duarte Muñoz, Ian Dariel"}, {"name": "Gaytan Cardoso, Jorlet Nicol"}, {"name": "Mondragón Imbilimbo, Angeles"}, {"name": "Serrano Espinoza, Elias Damian"}, {"name": "Valle De la Rosa, Donovan Michelle"}]},
+        {"id": 3, "students": [{"name": "Hernández Rendón, Carlos Ashmel"}, {"name": "Jiménez López, Blanca Isamar"}, {"name": "Rivera Martínez, Ana Marlene"}, {"name": "Rodríguez García, Cesar Alexis"}, {"name": "Royo Julio, Cristian Aron"}, {"name": "Urbano Elizalde, Killian Marti"}, {"name": "Acosta Rodriguez, Dante"}]},
+        {"id": 5, "students": [{"name": "García González, Alondra Yamilet"}, {"name": "García Gutiérrez, Maximiliano Mateo"}, {"name": "González, Piedras Jimena"}, {"name": "Isidro, Santiago Alejandro"}, {"name": "Ramírez Narciso, Eva Paola"}, {"name": "Zamora Cortés, Ian Dominic"}, {"name": "Malagon Rosas, Miguel Ángel"}]},
+        {"id": 6, "students": [{"name": "Álvarez Terrazas, Víctor Leonardo"}, {"name": "Esquivel Ubaldo, Iker Tadeo"}, {"name": "Gil, Enciso Maricruz"}, {"name": "Sánchez Jimenez, Patricio Samuel"}, {"name": "Sánchez, ParraAndrea Alexandra"}, {"name": "Vázquez Contreras, Aldo Giovanni"}, {"name": "Crespo Álvarez, Uriel"}]},
+        {"id": 7, "students": [{"name": "Colula Ortiz, Ariana Yamileth"}, {"name": "Cortés Olvera, Mateo Emiliano"}, {"name": "Hernández Gutiérrez, Gabriel Mateo"}, {"name": "Montalvo Fonseca, Emily Mayleth"}, {"name": "Romero Ordaz, Fátima Yanet"}, {"name": "Arroyo Carrillo, Jonathan Uriel"}]}
+      ]
     },
     "2B": {
-      "equipos": {
-        "Equipo 1": [
-          "Balderas, Montiel Israel",
-          "García Meza, Angel Isaac",
-          "Miranda Molina, Gabriela Betzabet",
-          "Pérez Ramos, Edwin Gabriel",
-          "Rangel Chávez, Rut Daneli",
-          "Salvador Sánchez, Cristian Jovany"
-        ],
-        "Equipo 2": [
-          "Avendaño Galdamez, Eduardo",
-          "Cabañas Hernández, Paola Sarahi",
-          "Delgado Mendoza, Melani Abryl",
-          "López Fonseca Jorge, Ever Zaid",
-          "Morales, Cuevas Ian"
-        ],
-        "Equipo 3": [
-          "Contreras Miguel, Angel Serafín",
-          "Hernández, Montecillos Jesús",
-          "Rosas Guerrero, Katerine Alexa",
-          "Tehuitze Razo Fernanda, Yamileth",
-          "Vega Delgado, Gabriel"
-        ],
-        "Equipo 4": [
-          "Alejandrez Vera, Ángel Yael",
-          "Gómez Hernandez, Atziri Nitzu",
-          "Hernández Cabañas, Haziel Sebastian",
-          "Martínez Reyes, Jade Jaqueline",
-          "Vega Delgado, Kendra Aimee",
-          "Crespo Rosas, Angel Leonel"
-        ],
-        "Equipo 5": [
-          "Maldonado Segundo, Alexis Gael",
-          "Martínez Mendoza, Giovanni Rodolfo",
-          "Soria Barcenas, Giovanna Itzel",
-          "Serrano Fernández, Donovan Michel",
-          "Aguirre Mora, Iker Santiago",
-          "Gomez García, Nazli Rocio"
-        ],
-        "Equipo 6": [
-          "Barrios Martínez, Daniela Zhaidy",
-          "García Montes, Martha Nayeli",
-          "Lima Flores Pablo, Eduardo Isaac",
-          "Mendez Parra, Jesús Abraham",
-          "Toriz Jaimez, Luis Enrique"
-        ],
-        "Equipo 7": [
-          "Armas Blancas, Edgar Said",
-          "Cruz Camacho, Danna Alisson",
-          "Enriquez Santiago, Marco Landon",
-          "García Reyes, Diostin Gael",
-          "Martínez Esquivel, Lucia Dannae",
-          "Peña Luna, Natan"
-        ]
-      },
-      "proyectos_asignados": {}
+      "teams": [
+        {"id": 1, "students": [{"name": "Balderas, Montiel Israel"}, {"name": "García Meza, Angel Isaac"}, {"name": "Miranda Molina, Gabriela Betzabet"}, {"name": "Pérez Ramos, Edwin Gabriel"}, {"name": "Rangel Chávez, Rut Daneli"}, {"name": "Salvador Sánchez, Cristian Jovany"}]},
+        {"id": 2, "students": [{"name": "Avendaño Galdamez, Eduardo"}, {"name": "Cabañas Hernández, Paola Sarahi"}, {"name": "Delgado Mendoza, Melani Abryl"}, {"name": "López Fonseca Jorge, Ever Zaid"}, {"name": "Morales, Cuevas Ian"}]},
+        {"id": 3, "students": [{"name": "Contreras Miguel, Angel Serafín"}, {"name": "Hernández, Montecillos Jesús"}, {"name": "Rosas Guerrero, Katerine Alexa"}, {"name": "Tehuitze Razo Fernanda, Yamileth"}, {"name": "Vega Delgado, Gabriel"}]},
+        {"id": 4, "students": [{"name": "Alejandrez Vera, Ángel Yael"}, {"name": "Gómez Hernandez, Atziri Nitzu"}, {"name": "Hernández Cabañas, Haziel Sebastian"}, {"name": "Martínez Reyes, Jade Jaqueline"}, {"name": "Vega Delgado, Kendra Aimee"}, {"name": "Crespo Rosas, Angel Leonel"}]},
+        {"id": 5, "students": [{"name": "Maldonado Segundo, Alexis Gael"}, {"name": "Martínez Mendoza, Giovanni Rodolfo"}, {"name": "Soria Barcenas, Giovanna Itzel"}, {"name": "Serrano Fernández, Donovan Michel"}, {"name": "Aguirre Mora, Iker Santiago"}, {"name": "Gomez García, Nazli Rocio"}]},
+        {"id": 6, "students": [{"name": "Barrios Martínez, Daniela Zhaidy"}, {"name": "García Montes, Martha Nayeli"}, {"name": "Lima Flores Pablo, Eduardo Isaac"}, {"name": "Mendez Parra, Jesús Abraham"}, {"name": "Toriz Jaimez, Luis Enrique"}]},
+        {"id": 7, "students": [{"name": "Armas Blancas, Edgar Said"}, {"name": "Cruz Camacho, Danna Alisson"}, {"name": "Enriquez Santiago, Marco Landon"}, {"name": "García Reyes, Diostin Gael"}, {"name": "Martínez Esquivel, Lucia Dannae"}, {"name": "Peña Luna, Natan"}]}
+      ]
     },
     "2C": {
-      "equipos": {
-        "Equipo 1": [
-          "Flores Madrigal, Lisseth Desiree",
-          "Reyes Hernández, Alexa",
-          "Rodríguez Hernández, Asael",
-          "Luna Herrera, Nayme Alizon"
-        ],
-        "Equipo 2": [
-          "Barboza Pérez, Julia Yazmin",
-          "Castellanos Palacios, Carolina Yaretzi",
-          "Oviedo Nuñez, Fabricio Jaaziel",
-          "Ponce Saavedra, Zuiry Nicole"
-        ],
-        "Equipo 3": [
-          "Guerrero Ramírez, Francisco Miguel",
-          "Hernández Helgueras, Julissa",
-          "Ortíz Pichardo, Gael",
-          "Rojas González, Alejandro"
-        ],
-        "Equipo 4": [
-          "Balderas Montiel, Guadalupe",
-          "Baldomero Ramírez, Dereck David",
-          "Justo Regino, Francisco Tadeo",
-          "Morales Ocampo, Dulce",
-          "Rodriguez Viveros, Ángel Valentin"
-        ],
-        "Equipo 5": [
-          "Calderón Pérez, Cristofer Santiago",
-          "Castillo Villalba, Brenda Michel",
-          "Cruz Blancas, Valery Ameyatzin",
-          "Martínez Váquez, Vanessa Mia",
-          "Pérez Paredes Ángel, de Jesús",
-          "Servin Rivas, Alan Uriel"
-        ],
-        "Equipo 6": [
-          "Candelario Velazquez, Dilan",
-          "Hilario González, Jocelin",
-          "Popoca Castillo, Kennya Tavatha",
-          "Quezada Sarabia Ian, Miguel Ángel"
-        ],
-        "Equipo 7": [
-          "Martínez Flores, Itzel Valeria",
-          "Rodríguez Trejo, Valeria"
-        ]
-      },
-      "proyectos_asignados": {}
+      "teams": [
+        {"id": 1, "students": [{"name": "Flores Madrigal, Lisseth Desiree"}, {"name": "Reyes Hernández, Alexa"}, {"name": "Rodríguez Hernández, Asael"}, {"name": "Luna Herrera, Nayme Alizon"}]},
+        {"id": 2, "students": [{"name": "Barboza Pérez, Julia Yazmin"}, {"name": "Castellanos Palacios, Carolina Yaretzi"}, {"name": "Oviedo Nuñez, Fabricio Jaaziel"}, {"name": "Ponce Saavedra, Zuiry Nicole"}]},
+        {"id": 3, "students": [{"name": "Guerrero Ramírez, Francisco Miguel"}, {"name": "Hernández Helgueras, Julissa"}, {"name": "Ortíz Pichardo, Gael"}, {"name": "Rojas González, Alejandro"}]},
+        {"id": 4, "students": [{"name": "Balderas Montiel, Guadalupe"}, {"name": "Baldomero Ramírez, Dereck David"}, {"name": "Justo Regino, Francisco Tadeo"}, {"name": "Morales Ocampo, Dulce"}, {"name": "Rodriguez Viveros, Ángel Valentin"}]},
+        {"id": 5, "students": [{"name": "Calderón Pérez, Cristofer Santiago"}, {"name": "Castillo Villalba, Brenda Michel"}, {"name": "Cruz Blancas, Valery Ameyatzin"}, {"name": "Martínez Váquez, Vanessa Mia"}, {"name": "Pérez Paredes Ángel, de Jesús"}, {"name": "Servin Rivas, Alan Uriel"}]},
+        {"id": 6, "students": [{"name": "Candelario Velazquez, Dilan"}, {"name": "Hilario González, Jocelin"}, {"name": "Popoca Castillo, Kennya Tavatha"}, {"name": "Quezada Sarabia Ian, Miguel Ángel"}]},
+        {"id": 7, "students": [{"name": "Martínez Flores, Itzel Valeria"}, {"name": "Rodríguez Trejo, Valeria"}]}
+      ]
     },
     "2D": {
-      "equipos": {
-        "Equipo 1": [
-          "Belman Rodríguez, Aarón",
-          "Cruz Brito, Daniel",
-          "Cruz Rodríguez, Fernando",
-          "Martínez Velasco, Jorge Alexis",
-          "Romero Lugardo, María Fernanda",
-          "Grande Reyes, Daniela Yar"
-        ],
-        "Equipo 2": [
-          "Aviles Bautista, Samantha Michel",
-          "Cortes Mendoza, Cristian",
-          "De la Rosa Ayala, Josafat Lucas",
-          "Martínez Lopez, Daniela Killary",
-          "Piña Trejo, Rodrigo",
-          "Zamora Torís, Brian"
-        ],
-        "Equipo 3": [
-          "Balcazar Velasquez, Mauricio",
-          "González Caldera, Alejandro",
-          "Luna Murillo, Luis Oswaldo",
-          "Martínez García, Santos Gabriel",
-          "Martinez Ramírez, Jesus Mauricio",
-          "Vázquez Plata, José"
-        ],
-        "Equipo 4": [
-          "Anastacio Guillermo, Graciela",
-          "Avendaño Galdamez, Aylin Samantha",
-          "Gómez Martínez, Emilio",
-          "Juárez Baltazar, Evan Eliel",
-          "Marin Hernandez, Mario",
-          "Rivera Rodríguez, Keila"
-        ],
-        "Equipo 5": [
-          "Casahonda Romero, Ángela Iraís",
-          "León Rivera, Eduardo José",
-          "Marquez Moreno, Elena Kimberly",
-          "Padilla Villa, Owen Iker",
-          "Suárez Nacar, Miguel Manuel",
-          "Vazquez Vazquez, Erick Giovanni"
-        ],
-        "Equipo 6": [
-          "Chávez Rosas, Añyel",
-          "Cortés Mendoza, Owen Alexander",
-          "Martínez Ortega, Yuli",
-          "Pérez Pérez, Melisa Atziri",
-          "Pérez Tinoco, Johan Daniel",
-          "Serrano Legorreta, Mía Valeria"
-        ],
-        "Equipo 7": [
-          "Bernabé Trejo, Miguel Ángel",
-          "Cano Jimenez, Brayan",
-          "Fierro Sandoval, Sofía Valentina",
-          "Gutierrez Velasquez, Carlos Adrian",
-          "Morataya Macedo, Alexandra",
-          "Olivares Mesa, Cristian Didier",
-          "Ramirez Tavera, Arturo"
-        ]
-      },
-      "proyectos_asignados": {}
+      "teams": [
+        {"id": 1, "students": [{"name": "Belman Rodríguez, Aarón"}, {"name": "Cruz Brito, Daniel"}, {"name": "Cruz Rodríguez, Fernando"}, {"name": "Martínez Velasco, Jorge Alexis"}, {"name": "Romero Lugardo, María Fernanda"}, {"name": "Grande Reyes, Daniela Yar"}]},
+        {"id": 2, "students": [{"name": "Aviles Bautista, Samantha Michel"}, {"name": "Cortes Mendoza, Cristian"}, {"name": "De la Rosa Ayala, Josafat Lucas"}, {"name": "Martínez Lopez, Daniela Killary"}, {"name": "Piña Trejo, Rodrigo"}, {"name": "Zamora Torís, Brian"}]},
+        {"id": 3, "students": [{"name": "Balcazar Velasquez, Mauricio"}, {"name": "González Caldera, Alejandro"}, {"name": "Luna Murillo, Luis Oswaldo"}, {"name": "Martínez García, Santos Gabriel"}, {"name": "Martinez Ramírez, Jesus Mauricio"}, {"name": "Vázquez Plata, José"}]},
+        {"id": 4, "students": [{"name": "Anastacio Guillermo, Graciela"}, {"name": "Avendaño Galdamez, Aylin Samantha"}, {"name": "Gómez Martínez, Emilio"}, {"name": "Juárez Baltazar, Evan Eliel"}, {"name": "Marin Hernandez, Mario"}, {"name": "Rivera Rodríguez, Keila"}]},
+        {"id": 5, "students": [{"name": "Casahonda Romero, Ángela Iraís"}, {"name": "León Rivera, Eduardo José"}, {"name": "Marquez Moreno, Elena Kimberly"}, {"name": "Padilla Villa, Owen Iker"}, {"name": "Suárez Nacar, Miguel Manuel"}, {"name": "Vazquez Vazquez, Erick Giovanni"}]},
+        {"id": 6, "students": [{"name": "Chávez Rosas, Añyel"}, {"name": "Cortés Mendoza, Owen Alexander"}, {"name": "Martínez Ortega, Yuli"}, {"name": "Pérez Pérez, Melisa Atziri"}, {"name": "Pérez Tinoco, Johan Daniel"}, {"name": "Serrano Legorreta, Mía Valeria"}]},
+        {"id": 7, "students": [{"name": "Bernabé Trejo, Miguel Ángel"}, {"name": "Cano Jimenez, Brayan"}, {"name": "Fierro Sandoval, Sofía Valentina"}, {"name": "Gutierrez Velasquez, Carlos Adrian"}, {"name": "Morataya Macedo, Alexandra"}, {"name": "Olivares Mesa, Cristian Didier"}, {"name": "Ramirez Tavera, Arturo"}]}
+      ]
     }
   }
 }

@@ -4,28 +4,28 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --force",
-    "build": "vite build",
+    "dev": "vite",
+    "build": "tsc && vite build",
     "preview": "vite preview",
     "dev:all": "concurrently \"pnpm dev\" \"node backend/server.js\""
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^5.1.0",
+    "express": "^4.19.2",
     "multer": "^2.0.2",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
-    "@types/multer": "^2.0.0",
-    "@types/node": "^22.14.0",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "concurrently": "^9.2.1",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.12.12",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.3",
+    "concurrently": "^8.2.0",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5"
   }
 }

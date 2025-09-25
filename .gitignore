@@ -1,2 +1,3 @@
 # Secrets and environment variables
 .env
+node_modules

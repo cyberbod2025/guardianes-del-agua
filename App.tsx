@@ -1,180 +1,83 @@
-import React, { useState } from 'react';
-import useLocalStorage from './hooks/useLocalStorage';
-import type { TeamProgress, ModuleData, ModuleStatus, ApprovalStatus, Team } from './types';
-import { MODULES } from './constants';
-import ProgressBar from './components/ProgressBar';
-import Module from './components/Module';
+import React, { useState, useEffect } from 'react';
+import './style.css';
 import LoginScreen from './components/LoginScreen';
-import TeacherDashboard from './components/TeacherDashboard';
-import ReviewScreen from './components/ReviewScreen';
-import { TrophyIcon, ClockIcon, ExclamationIcon } from './components/Icons';
-
-type AppState = 'login' | 'projectJourney' | 'teacherDashboard' | 'reviewScreen';
+import ProjectJourney from './components/ProjectJourney';
+import IntroSequence from './components/IntroSequence';
+import { TeamInfo, Database } from './types';
 
 function App() {
-  const [appState, setAppState] = useState<AppState>('login');
-  const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
-  const [reviewingTeamId, setReviewingTeamId] = useState<string | null>(null);
-  const [teamProgress, setTeamProgress] = useLocalStorage<TeamProgress | null>(null);
+  // ESTADO INICIAL CORRECTO Y VERIFICADO
+  const [appState, setAppState] = useState<'intro' | 'login' | 'projectJourney'>('intro');
+  const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
+  
+  const [database, setDatabase] = useState<Database | null>(null);
+  const [error, setError] = useState<string>('');
 
-  const handleLogin = (team: Team, progress: TeamProgress) => {
-    setCurrentTeam(team);
-    setTeamProgress(progress, `progress-${team.id}`);
+  // "ESPÍA" PARA VER EL CAMBIO DE ESTADO EN LA CONSOLA
+  useEffect(() => {
+    console.log(`✅ El estado de la aplicación ha cambiado a: ${appState}`);
+  }, [appState]);
+
+  // Cargar la base de datos
+  useEffect(() => {
+    fetch('http://localhost:3001/api/database')
+      .then(response => response.json())
+      .then(data => setDatabase(data))
+      .catch(err => {
+        console.error("Error cargando la base de datos:", err);
+        setError("Error de Conexión: No se pudo conectar con el servidor.");
+      });
+  }, []);
+
+  const handleLogin = (group: string, teamIdentifier: string) => {
+    if (!database) return;
+
+    const foundTeam: TeamInfo = {
+      group: group,
+      team: teamIdentifier,
+      members: database.grupos[group].equipos[teamIdentifier]
+    };
+    
+    setTeamInfo(foundTeam);
     setAppState('projectJourney');
   };
 
-  const handleTeacherLogin = () => {
-    setAppState('teacherDashboard');
-  };
-
-  const handleSelectTeamForReview = (teamId: string) => {
-    setReviewingTeamId(teamId);
-    setAppState('reviewScreen');
-  };
-
-  const handleBackToDashboard = () => {
-    setReviewingTeamId(null);
-    setAppState('teacherDashboard');
-  };
-
-  const handleModuleComplete = (moduleId: number, data: ModuleData) => {
-    if (!teamProgress) return;
-    setTeamProgress(prev => {
-      if (!prev) return null;
-      const newData = { ...prev.data, [moduleId]: data };
-      const newCompletedModules = Math.max(prev.completedModules, moduleId);
-      let newApprovalStatus: ApprovalStatus = prev.approvalStatus;
-
-      if (moduleId === 2) {
-        newApprovalStatus = 'pending';
-      }
-
-      return {
-        ...prev,
-        completedModules: newCompletedModules,
-        approvalStatus: newApprovalStatus,
-        data: newData,
-      };
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleSaveProgress = (moduleId: number, data: ModuleData) => {
-    if (!teamProgress) return;
-    setTeamProgress(prev => {
-      if (!prev) return null;
-      const newData = { ...prev.data, [moduleId]: data };
-      return {
-        ...prev,
-        data: newData,
-      };
-    });
-    alert("¡Progreso guardado!");
-  };
-
   const handleLogout = () => {
-    setCurrentTeam(null);
-    setTeamProgress(null);
+    setTeamInfo(null);
     setAppState('login');
   };
 
-  const handleExport = () => {
-    if (!currentTeam || !teamProgress) return;
-    let content = `Bitácora del Equipo: ${teamProgress.teamName}\n`;
-    content += `Grupo: ${currentTeam.teamNumber}\n`;
-    content += `----------------------------------------------------\n\n`;
-
-    MODULES.forEach(module => {
-      const moduleData = teamProgress.data[module.id];
-      content += `MÓDULO ${module.id}: ${module.title}\n`;
-      content += `--------------------------------------\n`;
-      if (moduleData) {
-        const moduleFields = MODULES.find(m => m.id === module.id)?.content.filter(f => f.type !== 'header' && f.type !== 'info') || [];
-        moduleFields.forEach(field => {
-            const answer = moduleData[(field as any).id];
-            if(answer !== undefined) {
-                content += `${(field as any).label}:\n${Array.isArray(answer) ? answer.join(', ') : answer}\n\n`;
-            }
-        });
-      } else {
-        content += "Módulo no completado o sin datos guardados.\n\n";
-      }
-    });
-
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `bitacora_${teamProgress.teamName.replace(/\s+/g, '_')}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const renderProjectJourney = () => {
-    if (!currentTeam || !teamProgress) {
-      if(appState !== 'login') handleLogout();
-      return null;
-    }
-
-    const isProjectComplete = teamProgress.completedModules >= MODULES.length && teamProgress.approvalStatus === 'approved';
-
-    const getStatusForModule = (moduleIndex: number): ModuleStatus => {
-      const { completedModules, approvalStatus } = teamProgress;
-      const planModuleIndex = 1;
-
-      if (approvalStatus === 'pending' && moduleIndex > planModuleIndex) {
-        return 'LOCKED';
-      }
-
-      if (approvalStatus === 'rejected') {
-        if (moduleIndex === planModuleIndex) return 'ACTIVE';
-        if (moduleIndex > planModuleIndex) return 'LOCKED';
-      }
-      
-      if (moduleIndex < completedModules) {
-        return 'COMPLETED';
-      }
-      
-      if (moduleIndex === completedModules) {
-        return 'ACTIVE';
-      }
-
-      return 'LOCKED';
-    }
-
-    return (
-      <div className="min-h-screen bg-[#F7F9FC] text-[#333333]">
-                <div>
-                  <h3 className="font-bold">El plan necesita ajustes</h3>
-                  <p className="text-sm">Tu profesor ha enviado observaciones. Por favor, revisa los comentarios, ajusta tu Módulo 2 y vuelve a enviarlo.</p>
-                  {teamProgress.teacherFeedback && (
-                    <div className="mt-2 p-3 bg-red-50 rounded-md border border-red-200">
-                        <p className="text-sm font-semibold">Comentarios del profesor:</p>
-                        <p className="text-sm whitespace-pre-wrap">{teamProgress.teacherFeedback}</p>
-                    </div>
-                  )}
-                </div>
-      </div>
-    );
-  }
-
   const renderContent = () => {
+    if (error) return <div className="error-message">{error}</div>;
+    if (!database) return <div>Cargando base de datos...</div>;
+
     switch (appState) {
+      case 'intro':
+        return <IntroSequence onComplete={() => setAppState('login')} />;
       case 'login':
-        return <LoginScreen onLogin={handleLogin} onTeacherLogin={handleTeacherLogin} />;
+        return <LoginScreen onLogin={handleLogin} database={database} />;
       case 'projectJourney':
-        return renderProjectJourney();
-      case 'teacherDashboard':
-        return <TeacherDashboard onReviewTeam={handleSelectTeamForReview} />;
-      case 'reviewScreen':
-        if (!reviewingTeamId) return <p>Error: No team selected for review.</p>;
-        return <ReviewScreen teamId={reviewingTeamId} onBack={handleBackToDashboard} />;
+        return teamInfo ? (
+          <ProjectJourney
+            teamInfo={teamInfo}
+            onLogout={handleLogout}
+            database={database}
+          />
+        ) : null;
       default:
-        return <p>Cargando...</p>;
+        return <div>Cargando...</div>;
     }
   };
 
-  return renderContent();
+  return (
+    <div className="app-container">
+      <div className="ocean">
+        <div className="wave"></div>
+        <div className="wave"></div>
+      </div>
+      <main>{renderContent()}</main>
+    </div>
+  );
 }
 
 export default App;

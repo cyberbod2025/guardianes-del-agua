@@ -1,53 +1,61 @@
 import express from 'express';
-import multer from 'multer';
 import cors from 'cors';
+import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-
 import { fileURLToPath } from 'url';
+
+// Configuración para usar __dirname en Módulos ES
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = 3001;
 
-// Enable CORS for all routes
 app.use(cors());
+app.use(express.json());
+// Servir archivos estáticos desde la carpeta 'uploads'
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Correctly define __dirname in ES module scope
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Create uploads directory if it doesn't exist
+// Asegurarse de que la carpeta 'uploads' exista
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
+    fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Set up storage engine for multer
+// Configuración de Multer para la subida de archivos
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDir);
-  },
-  filename: function (req, file, cb) {
-    // Use originalname to keep the file's name and extension
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
+    destination: function (req, file, cb) {
+        cb(null, 'backend/uploads/');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
 });
-
 const upload = multer({ storage: storage });
 
-// Define the upload endpoint
+// Ruta para la subida de archivos
 app.post('/upload', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send('No file uploaded.');
-  }
-  
-  // Send back the path to the file
-  res.status(200).json({ filePath: `/uploads/${req.file.filename}` });
+    if (!req.file) {
+        return res.status(400).send('No se subió ningún archivo.');
+    }
+    // Devuelve la ruta relativa para que el frontend pueda usarla
+    res.json({ filePath: `/uploads/${req.file.filename}` });
 });
 
-// Serve static files from the uploads directory
-app.use('/uploads', express.static(uploadsDir));
+// Ruta para servir la base de datos
+app.get('/api/database', (req, res) => {
+    const dbPath = path.join(__dirname, 'database.json');
+    fs.readFile(dbPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error al leer la base de datos.');
+        }
+        res.json(JSON.parse(data));
+    });
+});
 
 app.listen(port, () => {
-  console.log(`Backend server listening at http://localhost:${port}`);
+    console.log(`✅ Servidor de Backend corriendo en http://localhost:${port}`);
 });
