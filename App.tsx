@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useLocalStorage from './hooks/useLocalStorage';
-import type { TeamProgress, ModuleData, ModuleStatus } from './types';
+import type { TeamInfo, TeamProgress, ModuleData, ModuleStatus } from './types';
 import { MODULES } from './constants';
 import ProgressBar from './components/ProgressBar';
 import Module from './components/Module';
@@ -12,6 +12,8 @@ const INITIAL_PROGRESS: TeamProgress = {
 };
 
 function App() {
+  const [appState, setAppState] = useState<'intro' | 'login' | 'welcomeMessage' | 'projectJourney'>('intro');
+  const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
   const [teamProgress, setTeamProgress] = useLocalStorage<TeamProgress>('team-progress', INITIAL_PROGRESS);
 
   const handleModuleComplete = (moduleId: number, data: ModuleData) => {

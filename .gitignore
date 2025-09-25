@@ -1,2 +1,8 @@
 # Secrets and environment variables
 .env
+
+# Build artifacts
+dist/
+
+# Dependency directories
+node_modules/
