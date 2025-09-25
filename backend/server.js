@@ -4,11 +4,17 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 
+import { fileURLToPath } from 'url';
+
 const app = express();
 const port = 3001;
 
 // Enable CORS for all routes
 app.use(cors());
+
+// Correctly define __dirname in ES module scope
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'uploads');
