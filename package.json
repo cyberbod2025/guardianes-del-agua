@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "dev:all": "concurrently \"pnpm dev\" \"node backend/server.js\""
+    "dev:all": "concurrently \"pnpm dev\" \"pnpm --prefix backend start\""
   },
   "dependencies": {
     "cors": "^2.8.5",
