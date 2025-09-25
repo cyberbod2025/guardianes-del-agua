@@ -38,6 +38,14 @@ export interface ModuleData {
 
 // Represents the overall progress of a team
 export interface TeamProgress {
+  teamId: string;
+  teamName: string;
   completedModules: number;
   data: { [moduleId: number]: ModuleData };
+}
+
+export interface Team {
+  id: string;
+  teamNumber: string;
+  members: string[];
 }
