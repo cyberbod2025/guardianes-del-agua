@@ -1,28 +1,42 @@
-
 import React from 'react';
 
-export interface Task {
+// Defines the structure for a single field in a module form
+export type FormField = FormInput | FormDisplay;
+
+// Represents fields that are for display purposes only (not user input)
+export interface FormDisplay {
   id: string;
-  label: string;
-  type: 'textarea' | 'text' | 'file-description';
-  placeholder: string;
+  type: 'header' | 'info';
+  text: string;
 }
 
+// Represents fields that require user input
+export interface FormInput {
+  id: string;
+  type: 'text' | 'textarea' | 'checkbox' | 'radio' | 'select';
+  label: string;
+  placeholder?: string; // Optional for checkbox, radio, select
+  options?: string[];   // For checkbox, radio, select
+}
+
+// Defines the entire content of a module
 export interface ModuleContent {
   id: number;
   title: string;
   description: string;
-  mentorPrompts: string[];
-  tasks: Task[];
-  icon: React.ComponentType<{ className?: string }>;
+  icon: string; // Icon name as string
+  content: FormField[];
 }
 
+// Represents the status of a module for a team
 export type ModuleStatus = 'LOCKED' | 'ACTIVE' | 'COMPLETED';
 
+// Represents the saved data for a module. Can be a string or an array of strings (for checkboxes)
 export interface ModuleData {
-  [key: string]: string;
+  [key: string]: string | string[];
 }
 
+// Represents the overall progress of a team
 export interface TeamProgress {
   completedModules: number;
   data: { [moduleId: number]: ModuleData };

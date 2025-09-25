@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export const LightBulbIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
@@ -72,4 +73,16 @@ export const TrophyIcon: React.FC<{ className?: string }> = ({ className = "w-6 
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 10.5v6.75" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 5.25c0-1.657 2.015-3 4.5-3s4.5 1.343 4.5 3" />
     </svg>
+);
+
+export const TeamIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+
+export const PlanIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
 );

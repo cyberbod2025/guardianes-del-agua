@@ -1,84 +1,69 @@
+// En: constants.ts
 
-import type { ModuleContent } from './types';
-import { BeakerIcon, ChatBubbleLeftRightIcon, LightBulbIcon, PencilSquareIcon, PresentationChartBarIcon } from './components/Icons';
+import { ModuleContent } from './types';
 
+// Define los módulos del viaje del proyecto
 export const MODULES: ModuleContent[] = [
   {
     id: 1,
-    title: "Módulo 1: La Pregunta",
-    icon: LightBulbIcon,
-    description: "Transforma una observación de tu entorno en una pregunta medible y científicamente investigable.",
-    mentorPrompts: [
-      "¡Hola, equipo! Soy Mentor Aqua. He oído que han estado observando cómo las lluvias fuertes afectan su colonia. ¡Ese es un excelente primer paso de un científico!",
-      "Para empezar nuestra misión, describan: ¿qué es lo MÁS problemático que han visto durante o después de una lluvia intensa? Sean específicos.",
-      "Esa es una observación muy importante. Ahora, pensemos como ingenieros. ¿Cómo podríamos convertir esa observación en una pregunta que podamos medir o probar? Por ejemplo, en lugar de 'se inunda mucho', podríamos preguntar '¿Cuántos centímetros sube el agua en la calle X durante una lluvia de 30 minutos?'. ¿Qué pregunta se les ocurre a ustedes?",
-    ],
-    tasks: [
-      { id: 'observation', label: 'Nuestra observación principal:', type: 'textarea', placeholder: 'Ej: El agua se estanca en la esquina de la cancha y tarda mucho en irse.' },
-      { id: 'question', label: 'Nuestra pregunta de investigación (¡recuerden que sea medible!):', type: 'textarea', placeholder: 'Ej: ¿Cuánto tiempo tarda en drenarse un charco de 5 metros de diámetro en la esquina de la cancha?' },
+    title: "Misión 1: El ADN del Agua",
+    description: "Formaremos nuestro equipo de Guardianes y definiremos las preguntas clave de nuestra investigación.",
+    icon: 'TeamIcon',
+    content: [
+      { id: 'info_m1', type: 'info', text: 'Nuestra Misión: Usar el poder de los números para entender y proponer soluciones al problema del agua en nuestra comunidad.' },
+      { id: 'header_equipo', type: 'header', text: 'Sección 1: Constitución del Equipo' },
+      { id: 'rol_lider', type: 'text', label: 'Líder/Coordinador(a):', placeholder: 'Nombre del integrante' },
+      { id: 'rol_investigador_principal', type: 'text', label: 'Investigador(a) Principal:', placeholder: 'Nombre del integrante' },
+      { id: 'rol_investigador_campo', type: 'text', label: 'Investigador(a) de Campo:', placeholder: 'Nombre del integrante' },
+      { id: 'rol_disenador', type: 'text', label: 'Diseñador(a)/Arquitecto(a):', placeholder: 'Nombre del integrante' },
+      { id: 'rol_comunicador', type: 'text', label: 'Comunicador(a)/Portavoz:', placeholder: 'Nombre del integrante' },
+      { id: 'rol_escribano', type: 'text', label: 'Escribano(a)/Secretario(a):', placeholder: 'Nombre del integrante' },
+      { id: 'rol_guardian_materiales', type: 'text', label: 'Guardián de Materiales:', placeholder: 'Nombre del integrante' },
+      
+      { id: 'header_indagacion', type: 'header', text: 'Sección 2: Indagación Inicial (Lluvia de Ideas)' },
+      { id: 'observaciones_comunidad', type: 'textarea', label: 'Anoten todos los problemas o hechos relacionados con el agua que conocen o investigaron en su comunidad:', placeholder: 'Ej: La calle se inunda, falta el agua, las pipas cuestan dinero...' },
+
+      { id: 'header_preguntas', type: 'header', text: 'Sección 3: El Puente a las Matemáticas' },
+      { id: 'info_preguntas', type: 'info', text: 'Elijan 3 de sus observaciones y transfórmenlas en preguntas que se puedan medir o contar.' },
+      { id: 'pregunta_1', type: 'textarea', label: 'Pregunta de Investigación 1:', placeholder: 'Ej: ¿Cuántos litros de agua se acumulan por metro cuadrado?' },
+      { id: 'pregunta_2', type: 'textarea', label: 'Pregunta de Investigación 2:', placeholder: 'Ej: ¿Cuál es el costo promedio de una pipa para una familia?' },
+      { id: 'pregunta_3', type: 'textarea', label: 'Pregunta de Investigación 3:', placeholder: 'Escriban su tercera pregunta medible' },
     ],
   },
   {
     id: 2,
-    title: "Módulo 2: El Plan",
-    icon: PencilSquareIcon,
-    description: "Desglosa tu pregunta en un plan de acción concreto con acciones, materiales y roles para tu equipo.",
-    mentorPrompts: [
-      "¡Excelente pregunta! Un buen plan es la clave del éxito. Ahora, vamos a trazar nuestro mapa para encontrar la respuesta.",
-      "¿Qué acciones específicas necesitan realizar para contestar su pregunta? Piensen paso a paso, desde la construcción hasta la medición.",
-      "¿Qué materiales necesitarán para construir su modelo o experimento? Miren a su alrededor, ¡la creatividad es clave! No todo tiene que ser comprado.",
-      "Un gran equipo se organiza. ¿Qué roles tendrá cada integrante? Por ejemplo: 'Constructor/a Principal', 'Jefe/a de Mediciones', 'Documentador/a Visual'."
-    ],
-    tasks: [
-      { id: 'actions', label: 'Plan de Acción (paso a paso):', type: 'textarea', placeholder: '1. Construir una maqueta de la cancha. 2. Simular lluvia con una regadera. 3. Medir el tiempo de drenado...' },
-      { id: 'materials', label: 'Lista de Materiales:', type: 'textarea', placeholder: 'Cartón, botellas de plástico, tierra, pegamento, cronómetro, regla...' },
-      { id: 'roles', label: 'Roles del Equipo:', type: 'textarea', placeholder: 'Ana: Constructora. Luis: Medidor. Sofía: Fotógrafa y apuntes.' },
-    ],
-  },
-  {
-    id: 3,
-    title: "Módulo 3: La Investigación",
-    icon: BeakerIcon,
-    description: "Busca información para conectar tu problema local con el sistema a gran escala y crea un boceto de tu prototipo.",
-    mentorPrompts: [
-      "¡Ese plan se ve sólido! Antes de construir, los mejores ingenieros investigan. ¿Por qué creen que ocurre el problema que observaron?",
-      "Su problema local es parte de un sistema más grande. Investiguen un poco: ¿Cómo funciona el sistema de drenaje en la Ciudad de México? ¿Qué desafíos enfrenta?",
-      "Ahora, con esas ideas en mente, ¡es hora de diseñar! Hagan un boceto o dibujo de la maqueta o prototipo que construirán. No tiene que ser perfecto, solo claro. Describan las partes principales."
-    ],
-    tasks: [
-      { id: 'research', label: 'Resumen de nuestra investigación:', type: 'textarea', placeholder: 'Descubrimos que el drenaje de la ciudad es muy antiguo y a veces se tapa con basura, lo que causa las inundaciones en nuestra colonia...' },
-      { id: 'sketch', label: 'Descripción de nuestro boceto/prototipo:', type: 'file-description', placeholder: 'Nuestra maqueta mostrará una réplica de la cancha con coladeras. Usaremos una botella con agujeros para simular la lluvia y veremos cómo se acumula el agua...' },
-    ],
-  },
-  {
-    id: 4,
-    title: "Módulo 4: El Experimento",
-    icon: PresentationChartBarIcon,
-    description: "Registra sistemáticamente los datos numéricos de las pruebas con tu maqueta. ¡La acción se convierte en evidencia!",
-    mentorPrompts: [
-      "¡Manos a la obra! Es el momento de construir y probar. Recuerden, los errores son oportunidades para aprender.",
-      "Al hacer sus pruebas, ¿qué van a medir exactamente? (Ej: centímetros de agua, segundos en drenar, etc.) ¿Y cómo lo van a medir?",
-      "¡Registren todo! Creen una tabla simple para anotar sus mediciones. La organización es clave para encontrar patrones. Anoten también cualquier observación inesperada."
-    ],
-    tasks: [
-      { id: 'data', label: 'Registro de Datos (pueden hacer una tabla):', type: 'textarea', placeholder: 'Prueba 1: Lluvia ligera (1 litro/min) - Nivel de agua: 2cm - Tiempo de drenaje: 50 seg. \nPrueba 2: Lluvia fuerte (3 litros/min) - Nivel de agua: 6cm - Tiempo de drenaje: 180 seg.' },
-      { id: 'observations', label: 'Observaciones Adicionales:', type: 'textarea', placeholder: 'Notamos que si la basura tapa una coladera, el tiempo de drenaje aumenta al doble...' },
-    ],
-  },
-  {
-    id: 5,
-    title: "Módulo 5: La Comunicación",
-    icon: ChatBubbleLeftRightIcon,
-    description: "Analiza tus datos y crea un producto comunicativo final para presentar tus conclusiones basadas en evidencia.",
-    mentorPrompts: [
-      "¡Felicidades, Guardianes del Agua! Han recolectado evidencia valiosa. Miren sus datos. ¿Qué historia cuentan? ¿Responden a su pregunta inicial del Módulo 1?",
-      "¿Cuál es la conclusión principal de su proyecto? ¿Qué aprendieron?",
-      "El conocimiento se comparte. ¿Cómo pueden presentar sus hallazgos de una forma clara y poderosa? Podría ser una infografía, un video corto, una presentación. ¡Sean creativos!",
-      "Esbocen su plan para comunicar. ¿Qué mensaje principal quieren transmitir? ¿Qué gráficos o imágenes usarán?"
-    ],
-    tasks: [
-      { id: 'conclusion', label: 'Nuestra Conclusión Principal:', type: 'textarea', placeholder: 'Nuestros datos muestran que la acumulación de basura en las coladeras aumenta drásticamente el tiempo de drenaje, causando inundaciones con lluvias fuertes...' },
-      { id: 'communication_plan', label: 'Plan de Comunicación:', type: 'textarea', placeholder: 'Haremos una infografía con fotos de nuestro experimento. Mostraremos un gráfico de barras comparando los tiempos de drenaje con y sin basura. La propondremos para el periódico mural de la escuela.' },
+    title: "Misión 2: Diseñando Nuestro Plan de Ataque",
+    description: "Crearemos un plan detallado para investigar nuestra pregunta y recolectar los datos necesarios.",
+    icon: 'PlanIcon',
+    content: [
+      { id: 'header_pregunta_investigacion', type: 'header', text: 'Sección 1: Nuestra Pregunta de Investigación' },
+      { id: 'pregunta_elegida_m1', type: 'textarea', label: 'Transcriban aquí la pregunta que eligieron de la Misión 1:', placeholder: 'Copien la pregunta seleccionada por el equipo.' },
+      { id: 'pregunta_refinada', type: 'textarea', label: 'Ahora, háganla MÁS específica y medible (¿Qué van a medir o contar EXACTAMENTE?):', placeholder: 'Ej: ¿Cuántos litros de agua se estancan y qué área en m² cubre el charco?' },
+
+      { id: 'header_plan_accion', type: 'header', text: 'Sección 2: El Plan de Acción' },
+      { id: 'info_plan_accion', type: 'info', text: 'Definan las acciones, materiales y responsables para su investigación.' },
+      // Acción 1
+      { id: 'accion_1', type: 'text', label: 'Acción 1 - ¿Qué haremos?', placeholder: 'Ej: Medir el área del charco.' },
+      { id: 'materiales_1', type: 'text', label: 'Acción 1 - ¿Qué materiales usaremos?', placeholder: 'Ej: Cinta métrica, gis.' },
+      { id: 'rol_1', type: 'text', label: 'Acción 1 - ¿Rol principal responsable?', placeholder: 'Ej: Diseñador/Arquitecto.' },
+      { id: 'tiempo_1', type: 'text', label: 'Acción 1 - ¿Tiempo estimado?', placeholder: 'Ej: 15 min.' },
+      { id: 'indicador_1', type: 'text', label: 'Acción 1 - ¿Cómo sabremos que lo logramos? (Indicador)', placeholder: 'Ej: Tener las medidas en metros anotadas.' },
+      // Acción 2
+      { id: 'accion_2', type: 'text', label: 'Acción 2 - ¿Qué haremos?', placeholder: 'Ej: Recolectar muestras para medir profundidad.' },
+      { id: 'materiales_2', type: 'text', label: 'Acción 2 - ¿Qué materiales usaremos?', placeholder: 'Ej: 3 vasos de plástico, regla.' },
+      { id: 'rol_2', type: 'text', label: 'Acción 2 - ¿Rol principal responsable?', placeholder: 'Ej: Investigador de Campo.' },
+      { id: 'tiempo_2', type: 'text', label: 'Acción 2 - ¿Tiempo estimado?', placeholder: 'Ej: 10 min.' },
+      { id: 'indicador_2', type: 'text', label: 'Acción 2 - ¿Cómo sabremos que lo logramos? (Indicador)', placeholder: 'Ej: Tener 3 mediciones de profundidad en cm.' },
+
+      { id: 'header_matematicas', type: 'header', text: 'Sección 3: Las Matemáticas' },
+      { id: 'herramientas_matematicas', type: 'checkbox', label: 'Marquen las herramientas matemáticas que van a utilizar:', options: ['Conteos', 'Promedios', 'Mediciones', 'Porcentajes', 'Op. Básicas', 'Tablas/Gráficas'] },
+
+      { id: 'header_comunicacion', type: 'header', text: 'Sección 4: Comunicando Descubrimientos' },
+      { id: 'info_maqueta', type: 'info', text: 'Recuerden que la Maqueta del experimento o solución es obligatoria.' },
+      { id: 'metodo_comunicacion', type: 'radio', label: 'Elijan cómo van a comunicar los hallazgos de su maqueta:', options: ['Infografía', 'Video corto', 'Presentación', 'Exposición'] },
+      
+      { id: 'header_valores', type: 'header', text: 'Sección 5: Valores en Acción' },
+      { id: 'valor_equipo', type: 'select', label: 'Como equipo, elijan el valor más importante que necesitarán para esta misión:', options: ['Paciencia', 'Comunicación', 'Respeto', 'Colaboración', 'Creatividad'] },
     ],
   },
 ];
