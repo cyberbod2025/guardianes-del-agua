@@ -1,11 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Team, TeamProgress, FormInput } from '../types';
+import React, { useEffect, useState } from 'react';
 import { MODULES } from '../constants';
+import type { Database, FormInput, StoredFile, Team, TeamProgress } from '../types';
 
 interface ReviewScreenProps {
   teamId: string;
   onBack: () => void;
 }
+
+const isStoredFile = (value: unknown): value is StoredFile => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  if (value instanceof File) {
+    return false;
+  }
+  const candidate = value as Record<string, unknown>;
+  return typeof candidate.name === 'string';
+};
 
 const ReviewScreen: React.FC<ReviewScreenProps> = ({ teamId, onBack }) => {
   const [team, setTeam] = useState<Team | null>(null);
@@ -14,72 +25,121 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ teamId, onBack }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       setIsLoading(true);
-      const progressData = localStorage.getItem(`progress-${teamId}`);
-      if (progressData) {
-        const parsedProgress = JSON.parse(progressData);
-        setProgress(parsedProgress);
-        setFeedback(parsedProgress.teacherFeedback || '');
-      }
-
-      const dbResponse = await fetch('/database.json');
-      const db = await dbResponse.json();
-      let foundTeam: Team | null = null;
-      for (const group in db) {
-        const teamInGroup = db[group].find((t: Team) => t.id === teamId);
-        if (teamInGroup) {
-          foundTeam = teamInGroup;
-          break;
+      const stored = localStorage.getItem(`progress-${teamId}`);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as TeamProgress;
+          setProgress(parsed);
+          setFeedback(parsed.teacherFeedback ?? '');
+        } catch (error) {
+          console.warn('No se pudo leer el progreso almacenado', error);
         }
       }
-      setTeam(foundTeam);
-      setIsLoading(false);
+
+      try {
+        const response = await fetch('/database.json');
+        if (response.ok) {
+          const database = (await response.json()) as Database;
+          let found: Team | null = null;
+          for (const [groupId, teams] of Object.entries(database)) {
+            const match = teams.find((candidate) => candidate.id === teamId);
+            if (match) {
+              found = { ...match, groupId };
+              break;
+            }
+          }
+          setTeam(found);
+        }
+      } catch (error) {
+        console.warn('No se pudo cargar la base de datos', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchData();
+    loadData();
   }, [teamId]);
 
   const handleApprove = () => {
-    if (!progress) return;
-    const updatedProgress = { ...progress, approvalStatus: 'approved' as const, teacherFeedback: '' };
-    localStorage.setItem(`progress-${teamId}`, JSON.stringify(updatedProgress));
-    alert('Plan aprobado. El equipo será notificado.');
+    if (!progress) {
+      return;
+    }
+    const updated: TeamProgress = {
+      ...progress,
+      approvalStatus: 'approved',
+      teacherFeedback: '',
+      lastUpdated: new Date().toISOString(),
+    };
+    localStorage.setItem(`progress-${teamId}`, JSON.stringify(updated));
+    alert('Plan aprobado. El equipo recibira la notificacion.');
     onBack();
   };
 
   const handleReject = () => {
-    if (!progress) return;
-    const updatedProgress = { 
-        ...progress, 
-        approvalStatus: 'rejected' as const,
-        teacherFeedback: feedback
+    if (!progress) {
+      return;
+    }
+    const updated: TeamProgress = {
+      ...progress,
+      approvalStatus: 'rejected',
+      teacherFeedback: feedback,
+      lastUpdated: new Date().toISOString(),
     };
-    localStorage.setItem(`progress-${teamId}`, JSON.stringify(updatedProgress));
-    alert('Plan rechazado. El equipo será notificado y podrá ver tus observaciones.');
+    localStorage.setItem(`progress-${teamId}`, JSON.stringify(updated));
+    alert('Plan rechazado. El equipo podra ver tus observaciones.');
     onBack();
   };
 
   const renderModuleAnswers = (moduleId: number) => {
-    const module = MODULES.find(m => m.id === moduleId);
-    const moduleData = progress?.data[moduleId];
+    const module = MODULES.find((item) => item.id === moduleId);
+    const data = progress?.data[moduleId];
 
-    if (!module) return <p>Módulo no encontrado.</p>;
+    if (!module) {
+      return <p key={moduleId}>Modulo no encontrado.</p>;
+    }
 
     return (
       <div key={moduleId} className="mb-8">
-        <h3 className="text-xl font-semibold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">{module.title}</h3>
+        <h3 className="text-xl font-semibold text-slate-900 border-b border-blue-200 pb-2 mb-4">{module.title}</h3>
         <div className="space-y-4">
           {module.content
-            .filter(field => field.type !== 'header' && field.type !== 'info')
-            .map(field => {
+            .filter((field) => field.type !== 'header' && field.type !== 'info')
+            .map((field) => {
               const inputField = field as FormInput;
-              const answer = moduleData?.[inputField.id];
+              const answer = data?.[inputField.id];
               return (
-                <div key={inputField.id}>
-                  <p className="font-semibold text-gray-700">{inputField.label}</p>
-                  <p className="text-gray-800 bg-gray-50 p-2 rounded-md whitespace-pre-wrap">
-                    {answer ? (Array.isArray(answer) ? answer.join(', ') : answer) : <span className="text-gray-400">Sin respuesta</span>}
+                <div key={inputField.id} className="rounded-lg bg-slate-50 p-3">
+                  <p className="text-sm font-semibold text-slate-800">{inputField.label}</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">
+                    {Array.isArray(answer) ? (
+                      answer.join(', ')
+                    ) : answer instanceof File ? (
+                      answer.name
+                    ) : isStoredFile(answer) ? (
+                      <span>
+                        {answer.name}{' '}
+                        {answer.url ? (
+                          <a
+                            href={answer.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            Ver archivo
+                          </a>
+                        ) : (
+                          <span className="italic text-slate-500">(archivo pendiente)</span>
+                        )}
+                      </span>
+                    ) : typeof answer === 'string' && answer ? (
+                      answer
+                    ) : answer != null ? (
+                      String(answer)
+                    ) : (
+                      <span className="text-slate-400">Sin respuesta</span>
+                    )}
                   </p>
                 </div>
               );
@@ -90,47 +150,54 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ teamId, onBack }) => {
   };
 
   if (isLoading || !progress || !team) {
-    return <div className="p-8">Cargando datos del equipo...</div>;
+    return <div className="p-8 text-center text-slate-700">Cargando datos del equipo...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
-        <button onClick={onBack} className="mb-6 text-blue-500 hover:underline">{'<'} Volver al Panel</button>
-        <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Revisión del Plan: {progress.teamName}</h1>
-            <p className="text-lg text-gray-600 mb-6">Grupo: {team.teamNumber}</p>
-            
-            <div className="my-8">
-              {renderModuleAnswers(1)}
-              {renderModuleAnswers(2)}
-            </div>
+    <div className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-8">
+      <button type="button" onClick={onBack} className="mb-6 text-blue-600 hover:underline">{'<'} Volver al panel</button>
+      <div className="mx-auto max-w-4xl rounded-xl bg-white p-6 shadow-lg">
+        <header className="space-y-1">
+          <h1 className="text-2xl font-bold text-slate-900">Revision del plan: {progress.teamName}</h1>
+          <p className="text-sm text-slate-600">Grupo {team.groupId}</p>
+        </header>
 
-            <div className="mt-8">
-                <h2 className="text-2xl font-semibold mb-3">Observaciones del Profesor</h2>
-                <textarea 
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                    rows={5}
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-                    placeholder="Escribe aquí tus comentarios y sugerencias para el equipo..."
-                />
-            </div>
+        <section className="mt-8">
+          {renderModuleAnswers(1)}
+          {renderModuleAnswers(2)}
+          {renderModuleAnswers(3)}
+        </section>
 
-            <div className="mt-8 flex flex-col sm:flex-row justify-end gap-4">
-                <button 
-                    onClick={handleReject}
-                    className="bg-red-500 text-white py-2 px-6 rounded-md hover:bg-red-600 transition-colors"
-                >
-                    Rechazar y Enviar Observaciones
-                </button>
-                <button 
-                    onClick={handleApprove}
-                    className="bg-green-500 text-white py-2 px-6 rounded-md hover:bg-green-600 transition-colors"
-                >
-                    Aprobar Plan
-                </button>
-            </div>
-        </div>
+        <section className="mt-8 space-y-3">
+          <h2 className="text-xl font-semibold text-slate-900">Observaciones del profesor</h2>
+          <textarea
+            value={feedback}
+            onChange={(event) => setFeedback(event.target.value)}
+            rows={5}
+            className="h-32 w-full rounded-md border border-slate-300 p-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            placeholder="Escribe comentarios y sugerencias para el equipo..."
+          />
+        </section>
+
+        <footer className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={handleReject}
+            className="rounded-md bg-red-500 px-5 py-2 text-sm font-semibold text-white hover:bg-red-600"
+          >
+            Rechazar y enviar observaciones
+          </button>
+          <button
+            type="button"
+            onClick={handleApprove}
+            className="rounded-md bg-green-600 px-5 py-2 text-sm font-semibold text-white hover:bg-green-700"
+          >
+            Aprobar plan
+          </button>
+        </footer>
+      </div>
     </div>
   );
 };
+
+export default ReviewScreen;

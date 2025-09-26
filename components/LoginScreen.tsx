@@ -1,108 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { Team, TeamProgress } from '../types';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import { WaterDropIcon, SparklesIcon } from './Icons';
-
-// Define the structure of the database
-interface Database {
-  [group: string]: Team[];
-}
+import React, { useEffect, useMemo, useState } from 'react';
+import type { Database, Team, TeamProgress } from '../types';
+import { SparklesIcon } from './Icons';
 
 interface LoginScreenProps {
   onLogin: (team: Team, progress: TeamProgress) => void;
   onTeacherLogin: () => void;
 }
 
-type Step = 'askGroup' | 'askName' | 'setTeamName' | 'confirmTeam' | 'error';
+type Step = 'askGroup' | 'askLeaderName' | 'setTeamName' | 'confirmTeam' | 'error';
+
+const TEACHER_CODE = (import.meta.env.VITE_TEACHER_CODE || 'PROFE-ADMIN').toLowerCase();
+
+const normalizeText = (value: string) => value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onTeacherLogin }) => {
   const [step, setStep] = useState<Step>('askGroup');
-  const [db, setDb] = useState<Database | null>(null);
-  const [groups, setGroups] = useState<string[]>([]);
-  const [selectedGroup, setSelectedGroup] = useState<string>('');
+  const [database, setDatabase] = useState<Database | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState('');
   const [leaderName, setLeaderName] = useState('');
   const [foundTeam, setFoundTeam] = useState<Team | null>(null);
   const [teamName, setTeamName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [progress, setProgress] = useLocalStorage<TeamProgress | null>('team-progress', null);
-
-  // Fetch database on component mount
   useEffect(() => {
-    fetch('/database.json')
-      .then((res) => res.json())
-      .then((data: Database) => {
-        setDb(data);
-        setGroups(Object.keys(data));
-      })
-      .catch(err => {
-        console.error("Failed to load database.json", err);
+    const loadDatabase = async () => {
+      try {
+        const response = await fetch('/database.json', { credentials: 'same-origin' });
+        if (!response.ok) {
+          throw new Error(`Error HTTP ${response.status}`);
+        }
+        const data: Database = await response.json();
+        setDatabase(data);
+      } catch (error) {
+        console.error('Failed to load database.json', error);
+        setErrorMessage('No se pudo cargar la base de datos de equipos. Contacta al administrador.');
         setStep('error');
-        setErrorMessage('No se pudo cargar la base de datos de equipos. Por favor, contacta al administrador.');
-      });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDatabase();
   }, []);
 
-  const handleGroupSelect = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedGroup) {
-      setStep('askName');
-    }
-  };
+  const groups = useMemo(() => (database ? Object.keys(database) : []), [database]);
 
-  const handleFindTeam = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!db || !selectedGroup || !leaderName) return;
-
-    // Check for teacher login
-    if (leaderName.trim() === 'PROFE-ADMIN') {
-      onTeacherLogin();
-      return;
-    }
-
-    const teamsInGroup = db[selectedGroup];
-    const team = teamsInGroup.find(t => 
-      t.members.some(member => member.toLowerCase().trim() === leaderName.toLowerCase().trim())
-    );
-
-    if (team) {
-      setFoundTeam(team);
-      // Check localStorage for existing progress for this team
-      const savedProgress = localStorage.getItem(`progress-${team.id}`);
-      if (savedProgress) {
-        const parsedProgress = JSON.parse(savedProgress);
-        setTeamName(parsedProgress.teamName || '');
-        setStep('confirmTeam');
-      } else {
-        setStep('setTeamName');
-      }
-    } else {
-      setErrorMessage('No se encontró ningún equipo con ese nombre de líder en el grupo seleccionado. Revisa el nombre y el grupo.');
-    }
-  };
-
-  const handleSetTeamName = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!foundTeam || !teamName) return;
-
-    const newProgress: TeamProgress = {
-      teamId: foundTeam.id,
-      teamName: teamName,
-      completedModules: 0,
-      data: {},
-    };
-    localStorage.setItem(`progress-${foundTeam.id}`, JSON.stringify(newProgress));
-    onLogin(foundTeam, newProgress);
-  };
-
-  const handleConfirmTeam = () => {
-    if (!foundTeam) return;
-    const savedProgress = localStorage.getItem(`progress-${foundTeam.id}`);
-    if (savedProgress) {
-      onLogin(foundTeam, JSON.parse(savedProgress));
-    }
-  };
-
-  const handleGoBack = () => {
+  const resetState = () => {
     setStep('askGroup');
     setSelectedGroup('');
     setLeaderName('');
@@ -111,100 +55,268 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onTeacherLogin }) =>
     setErrorMessage('');
   };
 
-  const renderStep = () => {
-    switch (step) {
-      case 'askGroup':
-        return (
-          <form onSubmit={handleGroupSelect} className="space-y-4">
-            <p>¡Hola! Soy Mentor Aqua. Para empezar, por favor, selecciona tu grupo.</p>
-            <select 
-              value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
-              className="w-full p-2 border rounded-md"
-              required
-            >
-              <option value="" disabled>Elige tu grupo...</option>
-              {groups.map(g => <option key={g} value={g}>{g}</option>)}
-            </select>
-            <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Siguiente</button>
-          </form>
-        );
-
-      case 'askName':
-        return (
-          <form onSubmit={handleFindTeam} className="space-y-4">
-            <p>¡Excelente! Ahora, escribe el nombre completo del líder de tu equipo.</p>
-            <input 
-              type="text"
-              value={leaderName}
-              onChange={(e) => setLeaderName(e.target.value)}
-              placeholder="Nombre y Apellido del Líder"
-              className="w-full p-2 border rounded-md"
-              required
-            />
-            <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Buscar Equipo</button>
-            <button type="button" onClick={handleGoBack} className="w-full text-sm text-gray-600 hover:underline">Volver</button>
-          </form>
-        );
-
-      case 'setTeamName':
-        return (
-          <form onSubmit={handleSetTeamName} className="space-y-4">
-            <p>¡Equipo encontrado! Veo que es la primera vez que ingresan. ¡Bienvenidos, Guardianes del Agua!</p>
-            <div className="p-4 bg-blue-50 rounded-md"> 
-              <h3 className="font-bold">Integrantes:</h3>
-              <ul className="list-disc list-inside">
-                {foundTeam?.members.map(m => <li key={m}>{m}</li>)}
-              </ul>
-            </div>
-            <p>Por favor, elijan un nombre creativo para su equipo.</p>
-            <input 
-              type="text"
-              value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
-              placeholder="Nombre del Equipo"
-              className="w-full p-2 border rounded-md"
-              required
-            />
-            <button type="submit" className="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600">Guardar y Empezar</button>
-          </form>
-        );
-
-      case 'confirmTeam':
-        return (
-          <div className="space-y-4">
-            <p>¡Hola de nuevo! Encontré este equipo, ¿es el tuyo?</p>
-            <div className="p-4 bg-blue-50 rounded-md">
-              <h3 className="font-bold">Nombre del Equipo: {teamName}</h3>
-              <h4 className="font-semibold mt-2">Integrantes:</h4>
-              <ul className="list-disc list-inside">
-                {foundTeam?.members.map(m => <li key={m}>{m}</li>)}
-              </ul>
-            </div>
-            <button onClick={handleConfirmTeam} className="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600">Sí, continuar</button>
-            <button onClick={handleGoBack} className="w-full text-sm text-gray-600 hover:underline mt-2">No, este no es mi equipo</button>
-          </div>
-        );
-
-      case 'error':
-        return <p className="text-red-500">{errorMessage}</p>
-
-      default:
-        return null;
+  const hydrateProgress = (team: Team, stored: Partial<TeamProgress> | null): TeamProgress => {
+    const fallback: TeamProgress = {
+      teamId: team.id,
+      teamName: teamName || `Equipo ${team.teamNumber}`,
+      groupId: team.groupId,
+      completedModules: 0,
+      approvalStatus: 'none',
+      data: {},
+      lastUpdated: new Date().toISOString(),
+    };
+    if (!stored) {
+      return fallback;
     }
+
+    return {
+      teamId: stored.teamId ?? team.id,
+      teamName: stored.teamName ?? fallback.teamName,
+      groupId: stored.groupId ?? team.groupId,
+      completedModules: stored.completedModules ?? 0,
+      approvalStatus: stored.approvalStatus ?? 'none',
+      teacherFeedback: stored.teacherFeedback,
+      data: stored.data ?? {},
+      lastUpdated: stored.lastUpdated ?? new Date().toISOString(),
+    };
+  };
+
+  const handleGroupSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedGroup) {
+      return;
+    }
+    setStep('askLeaderName');
+  };
+
+  const handleFindTeam = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!database || !selectedGroup || !leaderName) {
+      return;
+    }
+
+    if (normalizeText(leaderName) === TEACHER_CODE) {
+      onTeacherLogin();
+      return;
+    }
+
+    const teams = database[selectedGroup];
+    const normalizedLeader = normalizeText(leaderName);
+    const databaseTeam = teams.find((team) =>
+      team.members.some((member) => normalizeText(member) === normalizedLeader)
+    );
+
+    if (!databaseTeam) {
+      setErrorMessage('No encontramos a ese lider en el grupo seleccionado. Revisa el nombre y vuelve a intentarlo.');
+      return;
+    }
+
+    const team: Team = { ...databaseTeam, groupId: selectedGroup };
+    setFoundTeam(team);
+
+    const storedProgressRaw = localStorage.getItem(`progress-${team.id}`);
+    if (storedProgressRaw) {
+      try {
+        const parsed = JSON.parse(storedProgressRaw) as Partial<TeamProgress>;
+        setTeamName(parsed.teamName ?? '');
+        setStep('confirmTeam');
+        return;
+      } catch (error) {
+        console.warn('Stored progress is corrupted. Resetting.', error);
+        localStorage.removeItem(`progress-${team.id}`);
+      }
+    }
+
+    setTeamName('');
+    setStep('setTeamName');
+  };
+
+  const handleCreateProgress = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!foundTeam || !teamName.trim()) {
+      return;
+    }
+    const sanitizedName = teamName.trim();
+    const newProgress = hydrateProgress(foundTeam, { teamName: sanitizedName });
+    localStorage.setItem(`progress-${foundTeam.id}`, JSON.stringify(newProgress));
+    onLogin(foundTeam, newProgress);
+  };
+
+  const handleConfirmExistingTeam = () => {
+    if (!foundTeam) {
+      return;
+    }
+    const storedProgressRaw = localStorage.getItem(`progress-${foundTeam.id}`);
+    if (!storedProgressRaw) {
+      resetState();
+      return;
+    }
+    try {
+      const parsed = JSON.parse(storedProgressRaw) as Partial<TeamProgress>;
+      const hydrated = hydrateProgress(foundTeam, parsed);
+      onLogin(foundTeam, hydrated);
+    } catch (error) {
+      console.warn('Stored progress is corrupted. Resetting.', error);
+      localStorage.removeItem(`progress-${foundTeam.id}`);
+      resetState();
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-blue-100">
+        <p className="text-blue-900 text-lg font-medium">Cargando base de datos de equipos...</p>
+      </div>
+    );
+  }
+
+  if (step === 'error') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-blue-100 p-6 text-center">
+        <div className="max-w-md space-y-4">
+          <SparklesIcon className="mx-auto h-12 w-12 text-red-500" />
+          <h1 className="text-2xl font-bold text-gray-800">Ups, algo salio mal</h1>
+          <p className="text-gray-700">{errorMessage}</p>
+          <button
+            type="button"
+            onClick={resetState}
+            className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-blue-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-8 space-y-6">
-        <div className="text-center space-y-2">
-            <SparklesIcon className="mx-auto h-12 w-12 text-blue-500" />
-            <h1 className="text-2xl font-bold text-gray-800">Guardianes del Agua</h1>
-        </div>
-        <div className="text-gray-700">
-          {errorMessage && <p className="text-red-500 text-sm mb-4">{errorMessage}</p>}
-          {renderStep()}
-        </div>
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 space-y-6 border border-blue-50">
+        <header className="text-center space-y-2">
+          <SparklesIcon className="mx-auto h-12 w-12 text-blue-500" />
+          <h1 className="text-3xl font-bold text-gray-900">Guardianes del Agua</h1>
+          <p className="text-gray-600">Mentor Aqua te guiara paso a paso. Vamos a comenzar!</p>
+        </header>
+
+        {errorMessage && (
+          <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{errorMessage}</div>
+        )}
+
+        {step === 'askGroup' && (
+          <form onSubmit={handleGroupSubmit} className="space-y-4">
+            <label htmlFor="group-select" className="block text-sm font-medium text-gray-700">Selecciona tu grupo</label>
+            <select
+              id="group-select"
+              value={selectedGroup}
+              onChange={(event) => setSelectedGroup(event.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              required
+            >
+              <option value="" disabled>Elige tu grupo...</option>
+              {groups.map((group) => (
+                <option key={group} value={group}>{group}</option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="w-full rounded-md bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Continuar
+            </button>
+          </form>
+        )}
+
+        {step === 'askLeaderName' && (
+          <form onSubmit={handleFindTeam} className="space-y-4">
+            <p className="text-gray-700">Escribe el nombre completo de la persona lider del equipo.</p>
+            <label htmlFor="leader-name" className="sr-only">Nombre del lider</label>
+            <input
+              id="leader-name"
+              type="text"
+              value={leaderName}
+              onChange={(event) => setLeaderName(event.target.value)}
+              placeholder="Nombre y Apellido del Lider"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              autoComplete="off"
+              required
+            />
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+              <button
+                type="submit"
+                className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 transition-colors"
+              >
+                Buscar equipo
+              </button>
+              <button
+                type="button"
+                onClick={resetState}
+                className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+              >
+                Volver
+              </button>
+            </div>
+          </form>
+        )}
+
+        {step === 'setTeamName' && foundTeam && (
+          <form onSubmit={handleCreateProgress} className="space-y-4">
+            <p className="text-gray-700">Bienvenidos, Guardianes! Asi esta conformado su equipo:</p>
+            <div className="rounded-md bg-blue-50 p-4 text-sm text-gray-700">
+              <h2 className="font-semibold text-blue-700">Integrantes</h2>
+              <ul className="mt-2 space-y-1 list-disc list-inside text-gray-600">
+                {foundTeam.members.map((member) => (
+                  <li key={member}>{member}</li>
+                ))}
+              </ul>
+            </div>
+            <label htmlFor="team-name" className="block text-sm font-medium text-gray-700">Escojan un nombre para su equipo</label>
+            <input
+              id="team-name"
+              type="text"
+              value={teamName}
+              onChange={(event) => setTeamName(event.target.value)}
+              placeholder="Nombre del Equipo"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full rounded-md bg-green-600 px-4 py-2 text-white font-semibold hover:bg-green-700 transition-colors"
+            >
+              Guardar y comenzar
+            </button>
+          </form>
+        )}
+
+        {step === 'confirmTeam' && foundTeam && (
+          <div className="space-y-4">
+            <p className="text-gray-700">Hola de nuevo! Confirma si este es tu equipo:</p>
+            <div className="rounded-md bg-blue-50 p-4 text-sm text-gray-700">
+              <h2 className="font-semibold text-blue-700">{teamName}</h2>
+              <ul className="mt-2 space-y-1 list-disc list-inside text-gray-600">
+                {foundTeam.members.map((member) => (
+                  <li key={member}>{member}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+              <button
+                type="button"
+                onClick={handleConfirmExistingTeam}
+                className="flex-1 rounded-md bg-green-600 px-4 py-2 text-white font-semibold hover:bg-green-700 transition-colors"
+              >
+                Si, continuar
+              </button>
+              <button
+                type="button"
+                onClick={resetState}
+                className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+              >
+                No es mi equipo
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

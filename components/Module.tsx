@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import type { ModuleContent, ModuleStatus, ModuleData, FormField, FormInput } from '../types';
-import { LockClosedIcon, CheckCircleIcon, WaterDropIcon, RocketIcon, SparklesIcon, TeamIcon, PlanIcon, ExperimentIcon } from './Icons';
+import React, { useEffect, useState } from 'react';
+import type { ModuleContent, ModuleStatus, ModuleData, ModuleDataValue, FormField, FormInput, StoredFile } from '../types';
+import { LockClosedIcon, CheckCircleIcon, WaterDropIcon, RocketIcon, TeamIcon, PlanIcon, ExperimentIcon } from './Icons';
 
 interface ModuleProps {
   module: ModuleContent;
@@ -17,10 +17,42 @@ const ICONS: { [key: string]: React.FC<{className?: string}> } = {
   ExperimentIcon,
 };
 
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001').replace(/\/$/, '');
+
+const ensureLeadingSlash = (value: string) => (value.startsWith('/') ? value : `/${value}`);
+
+const buildFileUrl = (filePath: string) => {
+  if (!filePath) {
+    return filePath;
+  }
+  if (/^https?:/i.test(filePath)) {
+    return filePath;
+  }
+  return `${API_BASE_URL}${ensureLeadingSlash(filePath)}`;
+};
+
+const isStoredFileMetadata = (value: ModuleDataValue): value is StoredFile => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  if (value instanceof File) {
+    return false;
+  }
+  const candidate = value as Partial<StoredFile>;
+  return typeof candidate.name === 'string' && typeof candidate.status === 'string';
+};
+
 const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, onSaveProgress }) => {
   const [formData, setFormData] = useState<ModuleData>(savedData || {});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (savedData) {
+      setFormData(savedData);
+    }
+  }, [savedData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
@@ -50,7 +82,7 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, 
   };
 
   const handleSaveClick = () => {
-    onSaveProgress(module.id, formData);
+    onSaveProgress(module.id, { ...formData });
   };
 
   const getInputFields = (content: FormField[]): FormInput[] => {
@@ -64,42 +96,52 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, 
     ) as FormInput[];
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    const updatedFormData = { ...formData };
-    const fileFields = getInputFields(module.content).filter(f => f.type === 'file');
+    const updatedFormData: ModuleData = { ...formData };
+    const fileFields = getInputFields(module.content).filter(field => field.type === 'file');
 
     try {
-      // Upload files first
       for (const field of fileFields) {
-        const file = formData[field.id];
-        if (file instanceof File) {
-          const formDataForUpload = new FormData();
-          formDataForUpload.append('file', file);
+        const value = formData[field.id];
 
-          const response = await fetch('http://localhost:3001/upload', {
+        if (value instanceof File) {
+          const payload = new FormData();
+          payload.append('file', value);
+
+          const response = await fetch(`${API_BASE_URL}/upload`, {
             method: 'POST',
-            body: formDataForUpload,
+            body: payload,
           });
 
           if (!response.ok) {
-            throw new Error(`Error al subir el archivo: ${file.name}`);
+            throw new Error(`No se pudo subir el archivo ${value.name}.`);
           }
 
-          const result = await response.json();
-          updatedFormData[field.id] = result.filePath; // Replace file with path
+          const result = (await response.json()) as { filePath?: string };
+          const stored: StoredFile = {
+            name: value.name,
+            size: value.size,
+            mimeType: value.type,
+            url: buildFileUrl(result.filePath ?? ''),
+            status: 'uploaded',
+          };
+          updatedFormData[field.id] = stored;
+        } else if (isStoredFileMetadata(value)) {
+          updatedFormData[field.id] = {
+            ...value,
+            url: value.url ? buildFileUrl(value.url) : value.url,
+          };
         }
       }
 
-      // Once all files are uploaded and paths are updated, complete the module
       onComplete(module.id, updatedFormData);
-
-    } catch (e) {
-      console.error(e);
-      setError(e instanceof Error ? e.message : "Ocurrió un error al subir los archivos.");
+    } catch (error) {
+      console.error(error);
+      setError(error instanceof Error ? error.message : 'Ocurrio un error al subir los archivos.');
     } finally {
       setIsLoading(false);
     }
@@ -113,9 +155,9 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, 
         return Array.isArray(value) && value.length > 0;
       }
       if (field.type === 'file') {
-        return value instanceof File;
+        return value instanceof File || isStoredFileMetadata(value);
       }
-      return value && String(value).trim() !== '';
+      return Boolean(value && String(value).trim() !== '');
     });
   }
 
@@ -215,7 +257,7 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, 
               onChange={handleInputChange}
               required
             >
-              <option value="" disabled>Selecciona una opción</option>
+              <option value="" disabled>Selecciona una opcion</option>
               {field.options?.map((option) => (
                 <option key={option} value={option}>{option}</option>
               ))}
@@ -223,7 +265,8 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, 
           </div>
         );
       case 'file':
-        const file = formData[field.id];
+        const fileValue = formData[field.id];
+        const metadata = isStoredFileMetadata(fileValue) ? fileValue : null;
         return (
           <div key={field.id}>
             <label htmlFor={field.id} className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
@@ -234,7 +277,26 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, 
               onChange={handleFileChange}
               required
             />
-            {file instanceof File && <p className="text-xs text-gray-500 mt-1">Archivo seleccionado: {file.name}</p>}
+            {fileValue instanceof File && (
+              <p className="text-xs text-gray-500 mt-1">Archivo seleccionado: {fileValue.name}</p>
+            )}
+            {metadata && (
+              <p className="text-xs text-gray-500 mt-1">
+                Archivo guardado: {metadata.name}{' '}
+                {metadata.url ? (
+                  <a
+                    href={metadata.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Ver archivo
+                  </a>
+                ) : (
+                  <span className="italic">pendiente de subir</span>
+                )}
+              </p>
+            )}
           </div>
         );
       default:
@@ -304,7 +366,37 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, 
                 <div key={field.id} className="mb-2">
                   <p className="text-sm font-semibold text-gray-800 capitalize">{field.label}</p>
                   <p className="text-sm text-gray-600 whitespace-pre-wrap">
-                    {Array.isArray(value) ? value.join(', ') : (typeof value === 'string' && value.startsWith('/uploads') ? <a href={`http://localhost:3001${value}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Ver archivo</a> : String(value))}
+                    {Array.isArray(value) ? (
+                      value.join(', ')
+                    ) : value instanceof File ? (
+                      value.name
+                    ) : isStoredFileMetadata(value) ? (
+                      value.url ? (
+                        <a
+                          href={value.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline"
+                        >
+                          {value.name} (ver archivo)
+                        </a>
+                      ) : (
+                        <span>{value.name} (archivo pendiente)</span>
+                      )
+                    ) : typeof value === 'string' && (value.startsWith('/') || value.startsWith('http')) ? (
+                      <a
+                        href={buildFileUrl(value)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline"
+                      >
+                        Ver archivo
+                      </a>
+                    ) : value != null && value !== '' ? (
+                      String(value)
+                    ) : (
+                      <span className="text-gray-400">Sin respuesta</span>
+                    )}
                   </p>
                 </div>
               )

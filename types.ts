@@ -1,55 +1,103 @@
-import React from 'react';
-
-// Defines the structure for a single field in a module form
 export type FormField = FormInput | FormDisplay;
 
-// Represents fields that are for display purposes only (not user input)
 export interface FormDisplay {
   id: string;
   type: 'header' | 'info';
   text: string;
 }
 
-// Represents fields that require user input
-export interface FormInput {
+export type FormInput =
+  | TextInputField
+  | TextAreaField
+  | CheckboxField
+  | RadioField
+  | SelectField
+  | FileField;
+
+interface BaseInputField {
   id: string;
-  type: 'text' | 'textarea' | 'checkbox' | 'radio' | 'select' | 'file';
   label: string;
-  placeholder?: string; // Optional for checkbox, radio, select
-  options?: string[];   // For checkbox, radio, select
+  placeholder?: string;
+  required?: boolean;
 }
 
-// Defines the entire content of a module
+export interface TextInputField extends BaseInputField {
+  type: 'text';
+}
+
+export interface TextAreaField extends BaseInputField {
+  type: 'textarea';
+}
+
+export interface CheckboxField extends BaseInputField {
+  type: 'checkbox';
+  options: string[];
+}
+
+export interface RadioField extends BaseInputField {
+  type: 'radio';
+  options: string[];
+}
+
+export interface SelectField extends BaseInputField {
+  type: 'select';
+  options: string[];
+}
+
+export interface FileField extends BaseInputField {
+  type: 'file';
+}
+
 export interface ModuleContent {
   id: number;
   title: string;
   description: string;
-  icon: string; // Icon name as string
+  icon: string;
   content: FormField[];
 }
 
-// Represents the status of a module for a team
 export type ModuleStatus = 'LOCKED' | 'ACTIVE' | 'COMPLETED';
 
-// Represents the saved data for a module. Can be a string or an array of strings (for checkboxes)
+export interface StoredFile {
+  name: string;
+  url?: string;
+  mimeType?: string;
+  size?: number;
+  status: 'uploaded' | 'pending';
+}
+
+export type ModuleDataValue = string | string[] | StoredFile | File | null;
+
 export interface ModuleData {
-  [key: string]: string | string[] | File | null;
+  [key: string]: ModuleDataValue;
 }
 
 export type ApprovalStatus = 'none' | 'pending' | 'approved' | 'rejected';
 
-// Represents the overall progress of a team
 export interface TeamProgress {
   teamId: string;
   teamName: string;
+  groupId: string;
   completedModules: number;
   approvalStatus: ApprovalStatus;
   teacherFeedback?: string;
   data: { [moduleId: number]: ModuleData };
+  lastUpdated: string;
 }
 
-export interface Team {
+export interface DatabaseTeam {
   id: string;
   teamNumber: string;
   members: string[];
+}
+
+export type Database = Record<string, DatabaseTeam[]>;
+
+export interface Team extends DatabaseTeam {
+  groupId: string;
+}
+
+export interface TeamSession {
+  team: Team;
+  progress: TeamProgress;
 }

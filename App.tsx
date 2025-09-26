@@ -1,83 +1,132 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './style.css';
+import IntroSequence from './components/IntroSequence';
 import LoginScreen from './components/LoginScreen';
 import ProjectJourney from './components/ProjectJourney';
-import IntroSequence from './components/IntroSequence';
-import { TeamInfo, Database } from './types';
+import TeacherDashboard from './components/TeacherDashboard';
+import ReviewScreen from './components/ReviewScreen';
+import { MODULES } from './constants';
+import type { Team, TeamProgress } from './types';
 
-function App() {
-  // ESTADO INICIAL CORRECTO Y VERIFICADO
-  const [appState, setAppState] = useState<'intro' | 'login' | 'projectJourney'>('intro');
-  const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
-  
-  const [database, setDatabase] = useState<Database | null>(null);
-  const [error, setError] = useState<string>('');
+type AppView = 'intro' | 'login' | 'journey' | 'teacherDashboard' | 'teacherReview';
 
-  // "ESPÍA" PARA VER EL CAMBIO DE ESTADO EN LA CONSOLA
+const App: React.FC = () => {
+  const [view, setView] = useState<AppView>('intro');
+  const [activeTeam, setActiveTeam] = useState<Team | null>(null);
+  const [activeProgress, setActiveProgress] = useState<TeamProgress | null>(null);
+  const [teamUnderReview, setTeamUnderReview] = useState<string | null>(null);
+
   useEffect(() => {
-    console.log(`✅ El estado de la aplicación ha cambiado a: ${appState}`);
-  }, [appState]);
+    if (import.meta.env.DEV) {
+      console.info(`Vista actual: ${view}`);
+    }
+  }, [view]);
 
-  // Cargar la base de datos
-  useEffect(() => {
-    fetch('http://localhost:3001/api/database')
-      .then(response => response.json())
-      .then(data => setDatabase(data))
-      .catch(err => {
-        console.error("Error cargando la base de datos:", err);
-        setError("Error de Conexión: No se pudo conectar con el servidor.");
-      });
+  const persistProgress = useCallback((progress: TeamProgress) => {
+    localStorage.setItem(`progress-${progress.teamId}`, JSON.stringify(progress));
   }, []);
 
-  const handleLogin = (group: string, teamIdentifier: string) => {
-    if (!database) return;
+  const handleLogin = useCallback((team: Team, progress: TeamProgress) => {
+    setActiveTeam(team);
+    const hydrated = { ...progress, groupId: progress.groupId || team.groupId, lastUpdated: progress.lastUpdated || new Date().toISOString() };
+    setActiveProgress(hydrated);
+    persistProgress(hydrated);
+    setView('journey');
+  }, [persistProgress]);
 
-    const foundTeam: TeamInfo = {
-      group: group,
-      team: teamIdentifier,
-      members: database.grupos[group].equipos[teamIdentifier]
-    };
-    
-    setTeamInfo(foundTeam);
-    setAppState('projectJourney');
-  };
+  const updateActiveProgress = useCallback((updater: (current: TeamProgress) => TeamProgress) => {
+    setActiveProgress((current) => {
+      if (!current) {
+        return current;
+      }
+      const next = updater(current);
+      persistProgress(next);
+      return next;
+    });
+  }, [persistProgress]);
 
-  const handleLogout = () => {
-    setTeamInfo(null);
-    setAppState('login');
-  };
+  const handleLogout = useCallback(() => {
+    setActiveTeam(null);
+    setActiveProgress(null);
+    setView('login');
+  }, []);
 
-  const renderContent = () => {
-    if (error) return <div className="error-message">{error}</div>;
-    if (!database) return <div>Cargando base de datos...</div>;
+  const handleTeacherLogin = useCallback(() => {
+    setView('teacherDashboard');
+  }, []);
 
-    switch (appState) {
-      case 'intro':
-        return <IntroSequence onComplete={() => setAppState('login')} />;
-      case 'login':
-        return <LoginScreen onLogin={handleLogin} database={database} />;
-      case 'projectJourney':
-        return teamInfo ? (
-          <ProjectJourney
-            teamInfo={teamInfo}
-            onLogout={handleLogout}
-            database={database}
-          />
-        ) : null;
-      default:
-        return <div>Cargando...</div>;
-    }
-  };
+  const handleReviewTeam = useCallback((teamId: string) => {
+    setTeamUnderReview(teamId);
+    setView('teacherReview');
+  }, []);
+
+  const handleReturnToDashboard = useCallback(() => {
+    setTeamUnderReview(null);
+    setView('teacherDashboard');
+  }, []);
+
+  const handleTeacherExit = useCallback(() => {
+    setTeamUnderReview(null);
+    setView('login');
+  }, []);
+
+  if (view === 'intro') {
+    return <IntroSequence onComplete={() => setView('login')} />;
+  }
+
+  if (view === 'login') {
+    return (
+      <LoginScreen
+        onLogin={handleLogin}
+        onTeacherLogin={handleTeacherLogin}
+      />
+    );
+  }
+
+  if (view === 'teacherDashboard') {
+    return (
+      <TeacherDashboard
+        onReviewTeam={handleReviewTeam}
+        onClose={handleTeacherExit}
+      />
+    );
+  }
+
+  if (view === 'teacherReview' && teamUnderReview) {
+    return (
+      <ReviewScreen
+        teamId={teamUnderReview}
+        onBack={handleReturnToDashboard}
+      />
+    );
+  }
+
+  if (view === 'journey' && activeTeam && activeProgress) {
+    return (
+      <ProjectJourney
+        team={activeTeam}
+        progress={activeProgress}
+        modules={MODULES}
+        onProgressChange={updateActiveProgress}
+        onLogout={handleLogout}
+      />
+    );
+  }
 
   return (
-    <div className="app-container">
-      <div className="ocean">
-        <div className="wave"></div>
-        <div className="wave"></div>
+    <div className="min-h-screen flex items-center justify-center bg-slate-100">
+      <div className="text-center space-y-4">
+        <p className="text-lg font-semibold text-slate-800">Estamos preparando tu experiencia.</p>
+        <button
+          type="button"
+          onClick={() => setView('login')}
+          className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700"
+        >
+          Ir al inicio
+        </button>
       </div>
-      <main>{renderContent()}</main>
     </div>
   );
-}
+};
 
 export default App;
