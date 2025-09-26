@@ -25,9 +25,9 @@ export const MODULES: ModuleContent[] = [
 
       { id: 'header_preguntas', type: 'header', text: 'Seccion 3: El Puente a las Matematicas' },
       { id: 'info_preguntas', type: 'info', text: 'Elijan 3 de sus observaciones y transformenlas en preguntas que se puedan medir o contar.' },
-      { id: 'pregunta_1', type: 'textarea', label: 'Pregunta de Investigacion 1:', placeholder: 'Ej: Cuantos litros de agua se acumulan por metro cuadrado?' },
-      { id: 'pregunta_2', type: 'textarea', label: 'Pregunta de Investigacion 2:', placeholder: 'Ej: Cual es el costo promedio de una pipa para una familia?' },
-      { id: 'pregunta_3', type: 'textarea', label: 'Pregunta de Investigacion 3:', placeholder: 'Escriban su tercera pregunta medible' },
+      { id: 'pregunta_1', type: 'textarea', label: 'Pregunta de Investigacion 1:', placeholder: 'Ej: Cuantos litros de agua se acumulan por metro cuadrado?', aiTask: 'researchQuestion', aiPrompt: 'Evalua si la pregunta de investigacion es medible, clara y conecta con el cuidado del agua. Propón mejoras concretas.' },
+      { id: 'pregunta_2', type: 'textarea', label: 'Pregunta de Investigacion 2:', placeholder: 'Ej: Cual es el costo promedio de una pipa para una familia?', aiTask: 'researchQuestion', aiPrompt: 'Evalua si la pregunta de investigacion es medible, clara y conecta con el cuidado del agua. Propón mejoras concretas.' },
+      { id: 'pregunta_3', type: 'textarea', label: 'Pregunta de Investigacion 3:', placeholder: 'Escriban su tercera pregunta medible', aiTask: 'researchQuestion', aiPrompt: 'Evalua si la pregunta de investigacion es medible, clara y conecta con el cuidado del agua. Propón mejoras concretas.' },
     ],
   },
   {
@@ -37,8 +37,8 @@ export const MODULES: ModuleContent[] = [
     icon: 'PlanIcon',
     content: [
       { id: 'header_pregunta_investigacion', type: 'header', text: 'Seccion 1: Nuestra Pregunta de Investigacion' },
-      { id: 'pregunta_elegida_m1', type: 'textarea', label: 'Transcriban aqui la pregunta que eligieron de la Mision 1:', placeholder: 'Copien la pregunta seleccionada por el equipo.' },
-      { id: 'pregunta_refinada', type: 'textarea', label: 'Ahora, haganla MAS especifica y medible (Que van a medir o contar EXACTAMENTE?):', placeholder: 'Ej: Cuantos litros de agua se estancan y que area en m2 cubre el charco?' },
+      { id: 'pregunta_elegida_m1', type: 'textarea', label: 'Transcriban aqui la pregunta que eligieron de la Mision 1:', placeholder: 'Copien la pregunta seleccionada por el equipo.', aiTask: 'researchQuestion', aiPrompt: 'Evalua si la pregunta seleccionada mantiene claridad y enfoque. Sugiere ajustes para hacerla mas precisa y medible.' },
+      { id: 'pregunta_refinada', type: 'textarea', label: 'Ahora, haganla MAS especifica y medible (Que van a medir o contar EXACTAMENTE?):', placeholder: 'Ej: Cuantos litros de agua se estancan y que area en m2 cubre el charco?', aiTask: 'researchQuestion', aiPrompt: 'Evalua si la version refinada de la pregunta es especifica, medible y accionable. Propón ajustes en caso necesario.' },
 
       { id: 'header_plan_accion', type: 'header', text: 'Seccion 2: El Plan de Accion' },
       { id: 'info_plan_accion', type: 'info', text: 'Definan las acciones, materiales y responsables para su investigacion.' },

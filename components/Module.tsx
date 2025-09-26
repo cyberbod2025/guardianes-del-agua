@@ -1,24 +1,45 @@
-import React, { useEffect, useState } from 'react';
-import type { ModuleContent, ModuleStatus, ModuleData, ModuleDataValue, FormField, FormInput, StoredFile } from '../types';
-import { LockClosedIcon, CheckCircleIcon, WaterDropIcon, RocketIcon, TeamIcon, PlanIcon, ExperimentIcon } from './Icons';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import type {
+  ModuleContent,
+  ModuleStatus,
+  ModuleData,
+  ModuleDataValue,
+  FormField,
+  FormInput,
+  StoredFile,
+  Team,
+  TeamProgress,
+} from '../types';
+import {
+  LockClosedIcon,
+  CheckCircleIcon,
+  WaterDropIcon,
+  RocketIcon,
+  TeamIcon,
+  PlanIcon,
+  ExperimentIcon,
+} from './Icons';
 
 interface ModuleProps {
   module: ModuleContent;
   status: ModuleStatus;
+  team: Team;
+  progress: TeamProgress;
   savedData: ModuleData | undefined;
+  isFrozen: boolean;
   onComplete: (moduleId: number, data: ModuleData) => void;
   onSaveProgress: (moduleId: number, data: ModuleData) => void;
 }
 
-const ICONS: { [key: string]: React.FC<{className?: string}> } = {
+const ICONS: Record<string, React.FC<{ className?: string }>> = {
   TeamIcon,
   PlanIcon,
   WaterDropIcon,
   ExperimentIcon,
 };
 
-
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001').replace(/\/$/, '');
+const AI_ENDPOINT = '/api/ai/validate-question';
 
 const ensureLeadingSlash = (value: string) => (value.startsWith('/') ? value : `/${value}`);
 
@@ -43,10 +64,22 @@ const isStoredFileMetadata = (value: ModuleDataValue): value is StoredFile => {
   return typeof candidate.name === 'string' && typeof candidate.status === 'string';
 };
 
-const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, onSaveProgress }) => {
+const getAiFeedbackKey = (fieldId: string) => `${fieldId}__aiFeedback`;
+
+const Module: React.FC<ModuleProps> = ({
+  module,
+  status,
+  team,
+  progress,
+  savedData,
+  isFrozen,
+  onComplete,
+  onSaveProgress,
+}) => {
   const [formData, setFormData] = useState<ModuleData>(savedData || {});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aiState, setAiState] = useState<Record<string, { loading: boolean; error: string | null }>>({});
 
   useEffect(() => {
     if (savedData) {
@@ -54,25 +87,37 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, 
     }
   }, [savedData]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { id, value } = e.target;
+  const getInputFields = useCallback((content: FormField[]): FormInput[] => {
+    return content.filter((field) =>
+      field.type === 'text' ||
+      field.type === 'textarea' ||
+      field.type === 'checkbox' ||
+      field.type === 'radio' ||
+      field.type === 'select' ||
+      field.type === 'file'
+    ) as FormInput[];
+  }, []);
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { id, value } = event.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
     setError(null);
+    setAiState((prev) => ({ ...prev, [id]: { loading: false, error: null } }));
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value, checked } = e.target;
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value, checked } = event.target;
     const currentValues = (formData[id] as string[] | undefined) || [];
     if (checked) {
       setFormData((prev) => ({ ...prev, [id]: [...currentValues, value] }));
     } else {
-      setFormData((prev) => ({ ...prev, [id]: currentValues.filter((v) => v !== value) }));
+      setFormData((prev) => ({ ...prev, [id]: currentValues.filter((option) => option !== value) }));
     }
     setError(null);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, files } = e.target;
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, files } = event.target;
     if (files && files.length > 0) {
       setFormData((prev) => ({ ...prev, [id]: files[0] }));
     } else {
@@ -82,32 +127,119 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, 
   };
 
   const handleSaveClick = () => {
+    if (isFrozen) {
+      return;
+    }
     onSaveProgress(module.id, { ...formData });
   };
 
-  const getInputFields = (content: FormField[]): FormInput[] => {
-    return content.filter(field => 
-      field.type === 'text' || 
-      field.type === 'textarea' || 
-      field.type === 'checkbox' || 
-      field.type === 'radio' || 
-      field.type === 'select' ||
-      field.type === 'file'
-    ) as FormInput[];
-  }
+  const handleRequestAiFeedback = useCallback(async (field: FormInput) => {
+    const currentValue = formData[field.id];
+    if (typeof currentValue !== 'string' || currentValue.trim().length < 12) {
+      setAiState((prev) => ({
+        ...prev,
+        [field.id]: {
+          loading: false,
+          error: 'Escribe una propuesta completa antes de pedir la opinión de Mentor Aqua.',
+        },
+      }));
+      return;
+    }
+
+    setAiState((prev) => ({ ...prev, [field.id]: { loading: true, error: null } }));
+
+    try {
+      const response = await fetch(AI_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: currentValue,
+          aiTask: field.aiTask ?? 'researchQuestion',
+          aiPrompt: field.aiPrompt,
+          moduleId: module.id,
+          moduleTitle: module.title,
+          teamName: progress.teamName,
+          groupId: team.groupId,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Mentor Aqua no pudo responder. Intenta más tarde.');
+      }
+
+      const feedback = payload?.feedback ?? {};
+      const summary: string = feedback?.summary || feedback?.analysis || payload?.message || payload?.raw || 'Mentor Aqua no devolvió comentarios.';
+      const suggestions: string[] = Array.isArray(feedback?.suggestions) ? feedback.suggestions : [];
+      const combined = suggestions.length > 0
+        ? `${summary.trim()}\n\nSugerencias de Mentor Aqua:\n${suggestions.map((item: string) => `• ${item}`).join('\n')}`
+        : summary.trim();
+
+      setFormData((prev) => ({
+        ...prev,
+        [getAiFeedbackKey(field.id)]: combined,
+      }));
+
+      setAiState((prev) => ({ ...prev, [field.id]: { loading: false, error: null } }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo obtener la retroalimentación.';
+      setAiState((prev) => ({ ...prev, [field.id]: { loading: false, error: message } }));
+    }
+  }, [formData, module.id, module.title, progress.teamName, team.groupId]);
+
+  const renderAiTools = (
+    field: FormInput,
+    aiStatus: { loading: boolean; error: string | null },
+    aiFeedback: ModuleDataValue,
+  ) => {
+    if (!field.aiTask) {
+      return null;
+    }
+
+    const feedbackText = typeof aiFeedback === 'string' ? aiFeedback : '';
+
+    return (
+      <div className="space-y-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            onClick={() => handleRequestAiFeedback(field)}
+            disabled={aiStatus.loading || isFrozen}
+            className="inline-flex items-center justify-center rounded-full bg-cyan-500 px-4 py-1.5 text-xs font-semibold text-slate-950 shadow transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:bg-slate-600"
+          >
+            {aiStatus.loading ? 'Mentor Aqua está pensando...' : 'Pedir ayuda a Mentor Aqua'}
+          </button>
+          {aiStatus.error && (
+            <span className="text-xs text-rose-300">{aiStatus.error}</span>
+          )}
+        </div>
+        {feedbackText && (
+          <div className="rounded-xl border border-cyan-400/30 bg-slate-900/60 p-3 text-sm text-cyan-100 whitespace-pre-wrap">
+            <p className="font-semibold text-cyan-200">Mentor Aqua comenta:</p>
+            <p className="mt-1 text-cyan-100/90">{feedbackText}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (isFrozen) {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     const updatedFormData: ModuleData = { ...formData };
-    const fileFields = getInputFields(module.content).filter(field => field.type === 'file');
+    const fileFields = getInputFields(module.content).filter((field) => field.type === 'file');
 
     try {
       for (const field of fileFields) {
         const value = formData[field.id];
-
         if (value instanceof File) {
           const payload = new FormData();
           payload.append('file', value);
@@ -126,174 +258,200 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, 
             name: value.name,
             size: value.size,
             mimeType: value.type,
-            url: buildFileUrl(result.filePath ?? ''),
-            status: 'uploaded',
+            url: result.filePath ? buildFileUrl(result.filePath) : undefined,
+            status: result.filePath ? 'uploaded' : 'pending',
           };
           updatedFormData[field.id] = stored;
-        } else if (isStoredFileMetadata(value)) {
-          updatedFormData[field.id] = {
-            ...value,
-            url: value.url ? buildFileUrl(value.url) : value.url,
-          };
         }
       }
 
       onComplete(module.id, updatedFormData);
-    } catch (error) {
-      console.error(error);
-      setError(error instanceof Error ? error.message : 'Ocurrio un error al subir los archivos.');
+    } catch (uploadError) {
+      const message = uploadError instanceof Error ? uploadError.message : 'No se pudo completar el módulo.';
+      setError(message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isCompletable = () => {
+  const isCompletable = useMemo(() => {
+    if (isFrozen) {
+      return false;
+    }
     const inputFields = getInputFields(module.content);
-    return inputFields.every(field => {
+    return inputFields.every((field) => {
       const value = formData[field.id];
       if (field.type === 'checkbox') {
         return Array.isArray(value) && value.length > 0;
       }
-      if (field.type === 'file') {
-        return value instanceof File || isStoredFileMetadata(value);
+      if (field.type === 'radio') {
+        return typeof value === 'string' && value.length > 0;
       }
-      return Boolean(value && String(value).trim() !== '');
+      if (field.type === 'file') {
+        return Boolean(value);
+      }
+      if (field.required === false) {
+        return true;
+      }
+      return typeof value === 'string' ? value.trim().length > 0 : Boolean(value);
     });
-  }
+  }, [formData, getInputFields, isFrozen, module.content]);
 
   const renderField = (field: FormField) => {
-    switch (field.type) {
-      case 'header':
-        return <h3 key={field.id} className="text-lg font-semibold text-gray-800 mt-6 mb-2 border-b pb-2">{field.text}</h3>;
-      case 'info':
-        return <p key={field.id} className="text-sm text-gray-600 bg-blue-50 p-3 rounded-md">{field.text}</p>;
+    if (field.type === 'header') {
+      return (
+        <h3 key={field.id} className="text-lg font-semibold text-cyan-200/90">
+          {field.text}
+        </h3>
+      );
+    }
+
+    if (field.type === 'info') {
+      return (
+        <p key={field.id} className="text-sm text-cyan-100/70">
+          {field.text}
+        </p>
+      );
+    }
+
+    const inputField = field as FormInput;
+    const value = formData[inputField.id] ?? '';
+    const feedback = formData[getAiFeedbackKey(inputField.id)];
+    const aiStatus = aiState[inputField.id] ?? { loading: false, error: null };
+
+    const label = (
+      <label htmlFor={inputField.id} className="block text-sm font-semibold text-cyan-100">
+        {inputField.label}
+      </label>
+    );
+
+    const inputClasses = 'mt-1 w-full rounded-xl border border-cyan-400/30 bg-slate-950/60 px-3 py-2 text-sm text-cyan-50 shadow-inner focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400/40';
+
+    switch (inputField.type) {
       case 'text':
         return (
-          <div key={field.id}>
-            <label htmlFor={field.id} className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+          <div key={inputField.id} className="space-y-2">
+            {label}
             <input
+              id={inputField.id}
               type="text"
-              id={field.id}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#007BFF] focus:ring-[#007BFF] sm:text-sm p-2"
-              placeholder={field.placeholder}
-              value={(formData[field.id] as string) || ''}
+              value={typeof value === 'string' ? value : ''}
               onChange={handleInputChange}
-              required
+              placeholder={inputField.placeholder}
+              className={inputClasses}
+              disabled={isFrozen}
             />
+            {renderAiTools(inputField, aiStatus, feedback)}
           </div>
         );
       case 'textarea':
         return (
-          <div key={field.id}>
-            <label htmlFor={field.id} className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+          <div key={inputField.id} className="space-y-2">
+            {label}
             <textarea
-              id={field.id}
-              rows={4}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#007BFF] focus:ring-[#007BFF] sm:text-sm p-2"
-              placeholder={field.placeholder}
-              value={(formData[field.id] as string) || ''}
+              id={inputField.id}
+              value={typeof value === 'string' ? value : ''}
               onChange={handleInputChange}
-              required
+              placeholder={inputField.placeholder}
+              rows={4}
+              className={`${inputClasses} min-h-[120px]`}
+              disabled={isFrozen}
             />
-          </div>
-        );
-      case 'checkbox':
-        return (
-          <div key={field.id}>
-            <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
-            <div className="space-y-2">
-              {field.options?.map((option) => (
-                <div key={option} className="flex items-center">
-                  <input
-                    id={`${field.id}-${option}`}
-                    name={field.id}
-                    type="checkbox"
-                    value={option}
-                    className="h-4 w-4 rounded border-gray-300 text-[#007BFF] focus:ring-[#007BFF]"
-                    onChange={handleCheckboxChange}
-                    checked={((formData[field.id] as string[]) || []).includes(option)}
-                  />
-                  <label htmlFor={`${field.id}-${option}`} className="ml-3 block text-sm text-gray-700">
-                    {option}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      case 'radio':
-        return (
-          <div key={field.id}>
-            <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
-            <div className="space-y-2">
-              {field.options?.map((option) => (
-                <div key={option} className="flex items-center">
-                  <input
-                    id={`${field.id}-${option}`}
-                    name={field.id}
-                    type="radio"
-                    value={option}
-                    className="h-4 w-4 border-gray-300 text-[#007BFF] focus:ring-[#007BFF]"
-                    onChange={handleInputChange}
-                    checked={formData[field.id] === option}
-                  />
-                  <label htmlFor={`${field.id}-${option}`} className="ml-3 block text-sm text-gray-700">
-                    {option}
-                  </label>
-                </div>
-              ))}
-            </div>
+            {renderAiTools(inputField, aiStatus, feedback)}
           </div>
         );
       case 'select':
         return (
-          <div key={field.id}>
-            <label htmlFor={field.id} className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+          <div key={inputField.id} className="space-y-2">
+            {label}
             <select
-              id={field.id}
-              name={field.id}
-              className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-[#007BFF] focus:outline-none focus:ring-[#007BFF] sm:text-sm"
-              value={(formData[field.id] as string) || ''}
+              id={inputField.id}
+              value={typeof value === 'string' ? value : ''}
               onChange={handleInputChange}
-              required
+              className={inputClasses}
+              disabled={isFrozen}
             >
-              <option value="" disabled>Selecciona una opcion</option>
-              {field.options?.map((option) => (
-                <option key={option} value={option}>{option}</option>
+              <option value="" disabled>
+                {inputField.placeholder ?? 'Selecciona una opción'}
+              </option>
+              {inputField.options?.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
               ))}
             </select>
           </div>
         );
-      case 'file':
-        const fileValue = formData[field.id];
-        const metadata = isStoredFileMetadata(fileValue) ? fileValue : null;
+      case 'radio':
         return (
-          <div key={field.id}>
-            <label htmlFor={field.id} className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+          <fieldset key={inputField.id} className="space-y-2">
+            {label}
+            <div className="flex flex-wrap gap-3">
+              {inputField.options?.map((option) => (
+                <label key={option} className="flex items-center gap-2 text-sm text-cyan-100/80">
+                  <input
+                    type="radio"
+                    name={inputField.id}
+                    value={option}
+                    checked={value === option}
+                    onChange={handleInputChange}
+                    disabled={isFrozen}
+                  />
+                  {option}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        );
+      case 'checkbox':
+        return (
+          <fieldset key={inputField.id} className="space-y-2">
+            {label}
+            <div className="flex flex-wrap gap-3">
+              {inputField.options?.map((option) => {
+                const selected = Array.isArray(value) ? value.includes(option) : false;
+                return (
+                  <label key={option} className="flex items-center gap-2 text-sm text-cyan-100/80">
+                    <input
+                      type="checkbox"
+                      id={inputField.id}
+                      value={option}
+                      checked={selected}
+                      onChange={handleCheckboxChange}
+                      disabled={isFrozen}
+                    />
+                    {option}
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+        );
+      case 'file':
+        return (
+          <div key={inputField.id} className="space-y-2">
+            {label}
             <input
+              id={inputField.id}
               type="file"
-              id={field.id}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               onChange={handleFileChange}
-              required
+              className="block text-sm text-cyan-100/80 file:mr-4 file:rounded-md file:border-0 file:bg-cyan-500/20 file:px-3 file:py-2 file:text-cyan-100 hover:file:bg-cyan-500/40"
+              disabled={isFrozen}
             />
-            {fileValue instanceof File && (
-              <p className="text-xs text-gray-500 mt-1">Archivo seleccionado: {fileValue.name}</p>
-            )}
-            {metadata && (
-              <p className="text-xs text-gray-500 mt-1">
-                Archivo guardado: {metadata.name}{' '}
-                {metadata.url ? (
+            {value && typeof value === 'object' && !(value instanceof File) && isStoredFileMetadata(value) && (
+              <p className="text-xs text-cyan-200/80">
+                Archivo guardado: {value.name}{' '}
+                {value.url ? (
                   <a
-                    href={metadata.url}
+                    href={value.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-cyan-300 underline"
                   >
                     Ver archivo
                   </a>
                 ) : (
-                  <span className="italic">pendiente de subir</span>
+                  <span className="italic">(pendiente de subir)</span>
                 )}
               </p>
             )}
@@ -304,107 +462,119 @@ const Module: React.FC<ModuleProps> = ({ module, status, savedData, onComplete, 
     }
   };
 
-  const getStatusColorClasses = () => {
-    switch(status) {
-      case 'COMPLETED': return 'border-[#28A745] bg-green-50';
-      case 'ACTIVE': return 'border-[#007BFF] bg-white shadow-md';
-      case 'LOCKED': return 'border-gray-300 bg-gray-100 opacity-70';
-    }
-  }
-  
   const ModuleIcon = ICONS[module.icon] || WaterDropIcon;
 
   return (
-    <div className={`transition-all duration-500 ease-in-out border-l-4 p-6 rounded-lg ${getStatusColorClasses()}`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <ModuleIcon className={`h-8 w-8 text-[#007BFF] ${status !== 'ACTIVE' && 'opacity-50'}`}/>
-          <h2 className="text-xl font-bold uppercase text-gray-700">{module.title}</h2>
+    <div className={`rounded-2xl border transition duration-300 ${status === 'ACTIVE' ? 'border-cyan-500/40 bg-slate-900/50 shadow-xl' : status === 'COMPLETED' ? 'border-emerald-400/30 bg-slate-900/40' : 'border-slate-700/40 bg-slate-900/20 opacity-80'}`}>
+      <div className="flex items-center justify-between border-b border-slate-700/40 px-6 py-4">
+        <div className="flex items-center gap-3">
+          <ModuleIcon className="h-9 w-9 text-cyan-300" />
+          <div>
+            <h2 className="text-xl font-semibold text-white">{module.title}</h2>
+            <p className="text-sm text-cyan-100/70">{module.description}</p>
+          </div>
         </div>
-        {status === 'LOCKED' && <LockClosedIcon className="h-6 w-6 text-gray-400" />}
-        {status === 'COMPLETED' && <CheckCircleIcon className="h-8 w-8 text-green-500" />}
+        {status === 'LOCKED' && <LockClosedIcon className="h-6 w-6 text-slate-500" />}
+        {status === 'COMPLETED' && <CheckCircleIcon className="h-7 w-7 text-emerald-400" />}
       </div>
-      
-      {status !== 'LOCKED' && (
-        <div className={`mt-4 transition-all duration-500 ease-in-out ${status === 'ACTIVE' ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-          <p className="text-gray-600 mb-6 text-lg">{module.description}</p>
 
+      {status !== 'LOCKED' && (
+        <div className="px-6 py-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {module.content.map((field) => renderField(field))}
-            
+
             {error && (
-              <div className="p-4 rounded-md bg-red-100 text-red-800">
-                <p>{error}</p>
+              <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+                {error}
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-x-4 pt-4">
-               <button
-                type="button"
-                onClick={handleSaveClick}
-                className="text-sm font-medium text-gray-600 hover:text-gray-800"
-              >
-                Guardar Progreso
-              </button>
-              <button
-                type="submit"
-                disabled={!isCompletable() || isLoading}
-                className="inline-flex items-center gap-x-2 px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#007BFF] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007BFF] disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200"
-              >
-                {isLoading ? 'Subiendo y Validando...' : <> <RocketIcon className="h-5 w-5"/> Completar y Validar </>}
-              </button>
-            </div>
+            {!isFrozen && (
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={handleSaveClick}
+                  className="text-sm font-semibold text-cyan-200 hover:text-white"
+                >
+                  Guardar avance
+                </button>
+                <button
+                  type="submit"
+                  disabled={!isCompletable || isLoading}
+                  className="inline-flex items-center gap-2 rounded-full bg-cyan-400 px-5 py-2 text-sm font-semibold text-slate-950 shadow transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:bg-slate-600"
+                >
+                  {isLoading ? 'Subiendo evidencias...' : (<><RocketIcon className="h-4 w-4" />Completar misión</>)}
+                </button>
+              </div>
+            )}
+
+            {isFrozen && (
+              <p className="rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-100">
+                Este módulo está congelado porque Mentor Aqua espera la luz verde del profesor.
+              </p>
+            )}
           </form>
         </div>
       )}
-      
-      {status === 'COMPLETED' && (
-         <div className="mt-4 p-4 bg-white rounded-md border border-gray-200">
-           {getInputFields(module.content).map((field) => {
-              const value = savedData?.[field.id];
-              return (
-                <div key={field.id} className="mb-2">
-                  <p className="text-sm font-semibold text-gray-800 capitalize">{field.label}</p>
-                  <p className="text-sm text-gray-600 whitespace-pre-wrap">
-                    {Array.isArray(value) ? (
-                      value.join(', ')
-                    ) : value instanceof File ? (
-                      value.name
-                    ) : isStoredFileMetadata(value) ? (
-                      value.url ? (
+
+      {status === 'COMPLETED' && savedData && (
+        <div className="space-y-4 border-t border-slate-700/40 px-6 py-5">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200/80">Respuestas guardadas</h3>
+          {getInputFields(module.content).map((field) => {
+            const value = savedData[field.id];
+            const feedbackValue = savedData[getAiFeedbackKey(field.id)];
+            return (
+              <div key={field.id} className="space-y-2 rounded-xl border border-slate-700/40 bg-slate-900/40 p-4">
+                <p className="text-sm font-semibold text-white">{field.label}</p>
+                <p className="whitespace-pre-wrap text-sm text-cyan-100/80">
+                  {Array.isArray(value)
+                    ? value.join(', ')
+                    : value instanceof File
+                    ? value.name
+                    : isStoredFileMetadata(value)
+                    ? (
+                        value.url ? (
+                          <a
+                            href={value.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-cyan-300 underline"
+                          >
+                            {value.name} (ver archivo)
+                          </a>
+                        ) : (
+                          `${value.name} (archivo pendiente)`
+                        )
+                      )
+                    : typeof value === 'string' && (value.startsWith('/') || value.startsWith('http'))
+                    ? (
                         <a
-                          href={value.url}
+                          href={buildFileUrl(value)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
+                          className="text-cyan-300 underline"
                         >
-                          {value.name} (ver archivo)
+                          Ver archivo
                         </a>
-                      ) : (
-                        <span>{value.name} (archivo pendiente)</span>
                       )
-                    ) : typeof value === 'string' && (value.startsWith('/') || value.startsWith('http')) ? (
-                      <a
-                        href={buildFileUrl(value)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                      >
-                        Ver archivo
-                      </a>
-                    ) : value != null && value !== '' ? (
-                      String(value)
-                    ) : (
-                      <span className="text-gray-400">Sin respuesta</span>
-                    )}
-                  </p>
-                </div>
-              )
-            })}
-         </div>
+                    : value != null && value !== ''
+                    ? String(value)
+                    : 'Sin respuesta'}
+                </p>
+                {typeof feedbackValue === 'string' && feedbackValue.trim().length > 0 && (
+                  <div className="rounded-lg border border-cyan-400/30 bg-slate-900/60 p-3 text-sm text-cyan-100 whitespace-pre-wrap">
+                    <p className="font-semibold text-cyan-200">Mentor Aqua comenta:</p>
+                    <p className="mt-1 text-cyan-100/90">{feedbackValue}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
 };
 
 export default Module;
+

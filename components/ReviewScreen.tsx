@@ -109,6 +109,7 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ teamId, onBack }) => {
             .map((field) => {
               const inputField = field as FormInput;
               const answer = data?.[inputField.id];
+              const aiFeedback = data?.[`${inputField.id}__aiFeedback`];
               return (
                 <div key={inputField.id} className="rounded-lg bg-slate-50 p-3">
                   <p className="text-sm font-semibold text-slate-800">{inputField.label}</p>
@@ -141,6 +142,12 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ teamId, onBack }) => {
                       <span className="text-slate-400">Sin respuesta</span>
                     )}
                   </p>
+                  {typeof aiFeedback === 'string' && aiFeedback.trim().length > 0 && (
+                    <div className="mt-3 rounded-md border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900 whitespace-pre-wrap">
+                      <p className="font-semibold">Mentor Aqua comenta:</p>
+                      <p className="mt-1">{aiFeedback}</p>
+                    </div>
+                  )}
                 </div>
               );
             })}

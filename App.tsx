@@ -6,9 +6,11 @@ import ProjectJourney from './components/ProjectJourney';
 import TeacherDashboard from './components/TeacherDashboard';
 import ReviewScreen from './components/ReviewScreen';
 import { MODULES } from './constants';
-import type { Team, TeamProgress } from './types';
+import type { SessionLogEntry, Team, TeamProgress } from './types';
 
 type AppView = 'intro' | 'login' | 'journey' | 'teacherDashboard' | 'teacherReview';
+
+const SESSION_LOG_KEY = 'teacher-session-log';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>('intro');
@@ -26,9 +28,37 @@ const App: React.FC = () => {
     localStorage.setItem(`progress-${progress.teamId}`, JSON.stringify(progress));
   }, []);
 
+  const appendSessionLog = useCallback((progress: TeamProgress) => {
+    const entry: SessionLogEntry = {
+      id: `session-${progress.teamId}-${Date.now()}`,
+      teamId: progress.teamId,
+      teamName: progress.teamName,
+      groupId: progress.groupId,
+      completedModules: progress.completedModules,
+      approvalStatus: progress.approvalStatus,
+      savedAt: new Date().toISOString(),
+      progressSnapshot: progress,
+    };
+
+    try {
+      const raw = localStorage.getItem(SESSION_LOG_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      const history: SessionLogEntry[] = Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+      history.push(entry);
+      localStorage.setItem(SESSION_LOG_KEY, JSON.stringify(history));
+    } catch (error) {
+      console.warn('No se pudo actualizar el historial de sesiones del profesor.', error);
+      localStorage.setItem(SESSION_LOG_KEY, JSON.stringify([entry]));
+    }
+  }, []);
+
   const handleLogin = useCallback((team: Team, progress: TeamProgress) => {
     setActiveTeam(team);
-    const hydrated = { ...progress, groupId: progress.groupId || team.groupId, lastUpdated: progress.lastUpdated || new Date().toISOString() };
+    const hydrated: TeamProgress = {
+      ...progress,
+      groupId: progress.groupId || team.groupId,
+      lastUpdated: progress.lastUpdated || new Date().toISOString(),
+    };
     setActiveProgress(hydrated);
     persistProgress(hydrated);
     setView('journey');
@@ -44,6 +74,26 @@ const App: React.FC = () => {
       return next;
     });
   }, [persistProgress]);
+
+  const handleFinishSession = useCallback(() => {
+    if (!activeProgress) {
+      setActiveTeam(null);
+      setView('login');
+      return;
+    }
+    const snapshot: TeamProgress = {
+      ...activeProgress,
+      lastUpdated: new Date().toISOString(),
+    };
+    persistProgress(snapshot);
+    appendSessionLog(snapshot);
+    setActiveTeam(null);
+    setActiveProgress(null);
+    setView('login');
+    if (typeof window !== 'undefined') {
+      window.alert('Tu avance se guardo y el profesor recibira la notificacion.');
+    }
+  }, [activeProgress, appendSessionLog, persistProgress]);
 
   const handleLogout = useCallback(() => {
     setActiveTeam(null);
@@ -109,20 +159,21 @@ const App: React.FC = () => {
         modules={MODULES}
         onProgressChange={updateActiveProgress}
         onLogout={handleLogout}
+        onFinishSession={handleFinishSession}
       />
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100">
-      <div className="text-center space-y-4">
-        <p className="text-lg font-semibold text-slate-800">Estamos preparando tu experiencia.</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="text-center space-y-4 text-slate-100">
+        <p className="text-lg font-semibold">Estamos preparando tu experiencia acuatica.</p>
         <button
           type="button"
           onClick={() => setView('login')}
-          className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700"
+          className="inline-flex items-center justify-center rounded-full bg-cyan-500 px-5 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
         >
-          Ir al inicio
+          Volver al inicio
         </button>
       </div>
     </div>

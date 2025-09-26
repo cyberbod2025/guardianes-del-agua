@@ -1,5 +1,7 @@
 export type FormField = FormInput | FormDisplay;
 
+export type AITask = 'researchQuestion' | 'actionPlan' | 'reflection';
+
 export interface FormDisplay {
   id: string;
   type: 'header' | 'info';
@@ -19,6 +21,8 @@ interface BaseInputField {
   label: string;
   placeholder?: string;
   required?: boolean;
+  aiTask?: AITask;
+  aiPrompt?: string;
 }
 
 export interface TextInputField extends BaseInputField {
@@ -97,7 +101,20 @@ export interface Team extends DatabaseTeam {
   groupId: string;
 }
 
+export interface SessionLogEntry {
+  id: string;
+  teamId: string;
+  teamName: string;
+  groupId: string;
+  completedModules: number;
+  approvalStatus: ApprovalStatus;
+  savedAt: string;
+  progressSnapshot: TeamProgress;
+}
+
 export interface TeamSession {
   team: Team;
   progress: TeamProgress;
 }
+
+
