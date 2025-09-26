@@ -360,33 +360,59 @@ const Module: React.FC<ModuleProps> = ({
             {renderAiTools(inputField, aiStatus, feedback)}
           </div>
         );
-      case 'select': {
-        const optionValues = inputField.optionsSource === 'teamMembers'
-          ? team.members
-          : inputField.options ?? [];
-        return (
-          <div key={inputField.id} className="space-y-2">
-            {label}
-            <select
-              id={inputField.id}
-              value={typeof value === 'string' ? value : ''}
-              onChange={handleInputChange}
-              className={inputClasses}
-              disabled={isFrozen}
-            >
-              <option value="" disabled>
-                {inputField.placeholder ?? 'Selecciona una opcion'}
-              </option>
-              {optionValues.map((option, index) => (
-                <option key={index} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        );
-      }
-      case 'radio':      case 'radio':
+      case 'select': {
+
+        const optionValues = inputField.optionsSource === 'teamMembers'
+
+          ? team.members
+
+          : inputField.options ?? [];
+
+        return (
+
+          <div key={inputField.id} className="space-y-2">
+
+            {label}
+
+            <select
+
+              id={inputField.id}
+
+              value={typeof value === 'string' ? value : ''}
+
+              onChange={handleInputChange}
+
+              className={inputClasses}
+
+              disabled={isFrozen}
+
+            >
+
+              <option value="" disabled>
+
+                {inputField.placeholder ?? 'Selecciona una opcion'}
+
+              </option>
+
+              {optionValues.map((option, index) => (
+
+                <option key={index} value={option}>
+
+                  {option}
+
+                </option>
+
+              ))}
+
+            </select>
+
+          </div>
+
+        );
+
+      }
+
+      case 'radio':
         return (
           <fieldset key={inputField.id} className="space-y-2">
             {label}
