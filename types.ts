@@ -2,6 +2,17 @@ export type FormField = FormInput | FormDisplay;
 
 export type AITask = 'researchQuestion' | 'actionPlan' | 'reflection';
 
+export type ProjectId = (
+  | 'project1'
+  | 'project2'
+  | 'project3'
+  | 'project4'
+  | 'project5'
+  | 'project6'
+  | 'project7'
+  | 'project8'
+);
+
 export interface FormDisplay {
   id: string;
   type: 'header' | 'info';
@@ -45,7 +56,8 @@ export interface RadioField extends BaseInputField {
 
 export interface SelectField extends BaseInputField {
   type: 'select';
-  options: string[];
+  options?: string[];
+  optionsSource?: 'teamMembers';
 }
 
 export interface FileField extends BaseInputField {
@@ -85,6 +97,7 @@ export interface TeamProgress {
   completedModules: number;
   approvalStatus: ApprovalStatus;
   teacherFeedback?: string;
+  projectId?: ProjectId;
   data: { [moduleId: number]: ModuleData };
   lastUpdated: string;
 }
@@ -116,5 +129,6 @@ export interface TeamSession {
   team: Team;
   progress: TeamProgress;
 }
+
 
 

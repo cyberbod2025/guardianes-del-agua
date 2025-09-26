@@ -1,0 +1,400 @@
+{
+  "2A": [
+    {
+      "id": "2A-1",
+      "teamNumber": "1",
+      "members": [
+        "Becerril Flores, Katy Nicol",
+        "Caudillo Flores, Yoali Britzey",
+        "García Calderon, Said Israel",
+        "Lima Cruz, Johan Alexis",
+        "Melchor Arriaga, Dilan Alexis",
+        "Velasco Garduño, Alexander Ismael",
+        "Castro Cuellar, Quetzalli"
+      ]
+    },
+    {
+      "id": "2A-2",
+      "teamNumber": "2",
+      "members": [
+        "Castrejón Villalobos, Lian Pio",
+        "Duarte Muñoz, Ian Dariel",
+        "Gaytan Cardoso, Jorlet Nicol",
+        "Mondragón Imbilimbo, Angeles",
+        "Serrano Espinoza, Elias Damian",
+        "Valle De la Rosa, Donovan Michelle"
+      ]
+    },
+    {
+      "id": "2A-3",
+      "teamNumber": "3",
+      "members": [
+        "Hernández Rendón, Carlos Ashmel",
+        "Jiménez López, Blanca Isamar",
+        "Rivera Martínez, Ana Marlene",
+        "Rodríguez García, Cesar Alexis",
+        "Royo Julio, Cristian Aron",
+        "Urbano Elizalde, Killian Marti",
+        "Acosta Rodriguez, Dante"
+      ]
+    },
+    {
+      "id": "2A-5",
+      "teamNumber": "5",
+      "members": [
+        "García González, Alondra Yamilet",
+        "García Gutiérrez, Maximiliano Mateo",
+        "González, Piedras Jimena",
+        "Isidro, Santiago Alejandro",
+        "Ramírez Narciso, Eva Paola",
+        "Zamora Cortés, Ian Dominic",
+        "Malagon Rosas, Miguel Ángel"
+      ]
+    },
+    {
+      "id": "2A-6",
+      "teamNumber": "6",
+      "members": [
+        "Álvarez Terrazas, Víctor Leonardo",
+        "Esquivel Ubaldo, Iker Tadeo",
+        "Gil, Enciso Maricruz",
+        "Sánchez Jimenez, Patricio Samuel",
+        "Sánchez, ParraAndrea Alexandra",
+        "Vázquez Contreras, Aldo Giovanni",
+        "Crespo Álvarez, Uriel"
+      ]
+    },
+    {
+      "id": "2A-7",
+      "teamNumber": "7",
+      "members": [
+        "Colula Ortiz, Ariana Yamileth",
+        "Cortés Olvera, Mateo Emiliano",
+        "Hernández Gutiérrez, Gabriel Mateo",
+        "Montalvo Fonseca, Emily Mayleth",
+        "Romero Ordaz, Fátima Yanet",
+        "Arroyo Carrillo, Jonathan Uriel"
+      ]
+    }
+  ],
+  "2B": [
+    {
+      "id": "2B-1",
+      "teamNumber": "1",
+      "members": [
+        "Balderas, Montiel Israel",
+        "García Meza, Angel Isaac",
+        "Miranda Molina, Gabriela Betzabet",
+        "Pérez Ramos, Edwin Gabriel",
+        "Rangel Chávez, Rut Daneli",
+        "Salvador Sánchez, Cristian Jovany"
+      ]
+    },
+    {
+      "id": "2B-2",
+      "teamNumber": "2",
+      "members": [
+        "Avendaño Galdamez, Eduardo",
+        "Cabañas Hernández, Paola Sarahi",
+        "Delgado Mendoza, Melani Abryl",
+        "López Fonseca Jorge, Ever Zaid",
+        "Morales, Cuevas Ian"
+      ]
+    },
+    {
+      "id": "2B-3",
+      "teamNumber": "3",
+      "members": [
+        "Contreras Miguel, Angel Serafín",
+        "Hernández, Montecillos Jesús",
+        "Rosas Guerrero, Katerine Alexa",
+        "Tehuitze Razo Fernanda, Yamileth",
+        "Vega Delgado, Gabriel"
+      ]
+    },
+    {
+      "id": "2B-4",
+      "teamNumber": "4",
+      "members": [
+        "Alejandrez Vera, Ángel Yael",
+        "Gómez Hernandez, Atziri Nitzu",
+        "Hernández Cabañas, Haziel Sebastian",
+        "Martínez Reyes, Jade Jaqueline",
+        "Vega Delgado, Kendra Aimee",
+        "Crespo Rosas, Angel Leonel"
+      ]
+    },
+    {
+      "id": "2B-5",
+      "teamNumber": "5",
+      "members": [
+        "Maldonado Segundo, Alexis Gael",
+        "Martínez Mendoza, Giovanni Rodolfo",
+        "Soria Barcenas, Giovanna Itzel",
+        "Serrano Fernández, Donovan Michel",
+        "Aguirre Mora, Iker Santiago",
+        "Gomez García, Nazli Rocio"
+      ]
+    },
+    {
+      "id": "2B-6",
+      "teamNumber": "6",
+      "members": [
+        "Barrios Martínez, Daniela Zhaidy",
+        "García Montes, Martha Nayeli",
+        "Lima Flores Pablo, Eduardo Isaac",
+        "Mendez Parra, Jesús Abraham",
+        "Toriz Jaimez, Luis Enrique"
+      ]
+    },
+    {
+      "id": "2B-7",
+      "teamNumber": "7",
+      "members": [
+        "Armas Blancas, Edgar Said",
+        "Cruz Camacho, Danna Alisson",
+        "Enriquez Santiago, Marco Landon",
+        "García Reyes, Diostin Gael",
+        "Martínez Esquivel, Lucia Dannae",
+        "Peña Luna, Natan"
+      ]
+    }
+  ],
+  "2C": [
+    {
+      "id": "2C-1",
+      "teamNumber": "1",
+      "members": [
+        "Flores Madrigal, Lisseth Desiree",
+        "Reyes Hernández, Alexa",
+        "Rodríguez Hernández, Asael",
+        "Luna Herrera, Nayme Alizon"
+      ]
+    },
+    {
+      "id": "2C-2",
+      "teamNumber": "2",
+      "members": [
+        "Barboza Pérez, Julia Yazmin",
+        "Castellanos Palacios, Carolina Yaretzi",
+        "Oviedo Nuñez, Fabricio Jaaziel",
+        "Ponce Saavedra, Zuiry Nicole"
+      ]
+    },
+    {
+      "id": "2C-3",
+      "teamNumber": "3",
+      "members": [
+        "Guerrero Ramírez, Francisco Miguel",
+        "Hernández Helgueras, Julissa",
+        "Ortíz Pichardo, Gael",
+        "Rojas González, Alejandro"
+      ]
+    },
+    {
+      "id": "2C-4",
+      "teamNumber": "4",
+      "members": [
+        "Balderas Montiel, Guadalupe",
+        "Baldomero Ramírez, Dereck David",
+        "Justo Regino, Francisco Tadeo",
+        "Morales Ocampo, Dulce",
+        "Rodriguez Viveros, Ángel Valentin"
+      ]
+    },
+    {
+      "id": "2C-5",
+      "teamNumber": "5",
+      "members": [
+        "Calderón Pérez, Cristofer Santiago",
+        "Castillo Villalba, Brenda Michel",
+        "Cruz Blancas, Valery Ameyatzin",
+        "Martínez Váquez, Vanessa Mia",
+        "Pérez Paredes Ángel, de Jesús",
+        "Servin Rivas, Alan Uriel"
+      ]
+    },
+    {
+      "id": "2C-6",
+      "teamNumber": "6",
+      "members": [
+        "Candelario Velazquez, Dilan",
+        "Hilario González, Jocelin",
+        "Popoca Castillo, Kennya Tavatha",
+        "Quezada Sarabia Ian, Miguel Ángel"
+      ]
+    },
+    {
+      "id": "2C-7",
+      "teamNumber": "7",
+      "members": [
+        "Martínez Flores, Itzel Valeria",
+        "Rodríguez Trejo, Valeria"
+      ]
+    }
+  ],
+  "2D": [
+    {
+      "id": "2D-1",
+      "teamNumber": "1",
+      "members": [
+        "Belman Rodríguez, Aarón",
+        "Cruz Brito, Daniel",
+        "Cruz Rodríguez, Fernando",
+        "Martínez Velasco, Jorge Alexis",
+        "Romero Lugardo, María Fernanda",
+        "Grande Reyes, Daniela Yar"
+      ]
+    },
+    {
+      "id": "2D-2",
+      "teamNumber": "2",
+      "members": [
+        "Aviles Bautista, Samantha Michel",
+        "Cortes Mendoza, Cristian",
+        "De la Rosa Ayala, Josafat Lucas",
+        "Martínez Lopez, Daniela Killary",
+        "Piña Trejo, Rodrigo",
+        "Zamora Torís, Brian"
+      ]
+    },
+    {
+      "id": "2D-3",
+      "teamNumber": "3",
+      "members": [
+        "Balcazar Velasquez, Mauricio",
+        "González Caldera, Alejandro",
+        "Luna Murillo, Luis Oswaldo",
+        "Martínez García, Santos Gabriel",
+        "Martinez Ramírez, Jesus Mauricio",
+        "Vázquez Plata, José"
+      ]
+    },
+    {
+      "id": "2D-4",
+      "teamNumber": "4",
+      "members": [
+        "Anastacio Guillermo, Graciela",
+        "Avendaño Galdamez, Aylin Samantha",
+        "Gómez Martínez, Emilio",
+        "Juárez Baltazar, Evan Eliel",
+        "Marin Hernandez, Mario",
+        "Rivera Rodríguez, Keila"
+      ]
+    },
+    {
+      "id": "2D-5",
+      "teamNumber": "5",
+      "members": [
+        "Casahonda Romero, Ángela Iraís",
+        "León Rivera, Eduardo José",
+        "Marquez Moreno, Elena Kimberly",
+        "Padilla Villa, Owen Iker",
+        "Suárez Nacar, Miguel Manuel",
+        "Vazquez Vazquez, Erick Giovanni"
+      ]
+    },
+    {
+      "id": "2D-6",
+      "teamNumber": "6",
+      "members": [
+        "Chávez Rosas, Añyel",
+        "Cortés Mendoza, Owen Alexander",
+        "Martínez Ortega, Yuli",
+        "Pérez Pérez, Melisa Atziri",
+        "Pérez Tinoco, Johan Daniel",
+        "Serrano Legorreta, Mía Valeria"
+      ]
+    },
+    {
+      "id": "2D-7",
+      "teamNumber": "7",
+      "members": [
+        "Bernabé Trejo, Miguel Ángel",
+        "Cano Jimenez, Brayan",
+        "Fierro Sandoval, Sofía Valentina",
+        "Gutierrez Velasquez, Carlos Adrian",
+        "Morataya Macedo, Alexandra",
+        "Olivares Mesa, Cristian Didier",
+        "Ramirez Tavera, Arturo"
+      ]
+    }
+  ],
+  "1D": [
+    {
+      "id": "1D-1",
+      "teamNumber": "1",
+      "members": [
+        "Alvarez Casasola, Andrea",
+        "Estrada Cuautle, Derek Adonai",
+        "Garcia Arreola, Kevin",
+        "Hernandez Cruz, Victor Daniel",
+        "Lorenzo Rebollo, Yamileth Sarahi",
+        "Treviño Hinojosa, Leobaldo"
+      ]
+    },
+    {
+      "id": "1D-2",
+      "teamNumber": "2",
+      "members": [
+        "Alejandro, Demian",
+        "Cuahutle Luengas,",
+        "Espejel Palestina, Kelly Brigitte",
+        "Gonzalez Caldera, Zoe Alexandra",
+        "Hernandez Arteaga,",
+        "Hernandez Lazaro, Ashly",
+        "Perez Serna, Ulises Gael"
+      ]
+    },
+    {
+      "id": "1D-3",
+      "teamNumber": "3",
+      "members": [
+        "Cervantes Esquivel,",
+        "Chavez Rosas, Amixi",
+        "Grande Reyes, Diana Paola",
+        "Morales Perez, Kevin Alejandro",
+        "Rivera Vidal, Johan Mateo",
+        "Vargas Rosas, Jibran Jordan",
+        "Galindo Espinosa, Ian Kenneth"
+      ]
+    },
+    {
+      "id": "1D-4",
+      "teamNumber": "4",
+      "members": [
+        "Aquino Granados, Iker",
+        "Gonzalez Garcia, Karla Denisse",
+        "Hernandez Rendon, Ashley",
+        "Madrigal De Anda, Samantha Cristal",
+        "Nolasco Manzano, Iker",
+        "Orocio Velazquez, Kymberli"
+      ]
+    },
+    {
+      "id": "1D-5",
+      "teamNumber": "5",
+      "members": [
+        "Gomez Varela, Karim",
+        "Maldonado Sandoval,",
+        "Perez Reyes, Valeria",
+        "Pichardo Vargas, Genesis Elim",
+        "Rubio Pacheco, Kevin Yael",
+        "Gomez González, Isabella Dinorah",
+        "Rosales Ramírez, Santiago Arturo"
+      ]
+    },
+    {
+      "id": "1D-6",
+      "teamNumber": "6",
+      "members": [
+        "Carranza Martinez,",
+        "Garcia Hernandez,",
+        "Hernandez Sanchez, Erika",
+        "Mendoza Sanchez, Ian",
+        "Ramos Escamilla, Angel Dominick",
+        "Rangel Loera, Dominic Eduardo"
+      ]
+    }
+  ]
+}

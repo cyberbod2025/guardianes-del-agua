@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { MODULES } from '../constants';
+import { getModulesForProject, getProjectDefinition } from '../constants';
 import type { SessionLogEntry, TeamProgress } from '../types';
 
 interface TeacherDashboardProps {
@@ -106,6 +106,22 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onReviewTeam, onClo
     URL.revokeObjectURL(url);
   }, [sessionHistory]);
 
+  const resolveProjectDefinition = useCallback((progress: TeamProgress) => {
+    if (!progress.projectId) {
+      return null;
+    }
+    try {
+      return getProjectDefinition(progress.projectId);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Proyecto desconocido en el panel del docente', progress.projectId, error);
+      }
+      return null;
+    }
+  }, []);
+
+  const totalModulesFor = useCallback((progress: TeamProgress) => getModulesForProject(progress.projectId).length, []);
+
   const pendingReview = allProgress.filter(progress => progress.approvalStatus === 'pending');
   const approvedTeams = allProgress.filter(progress => progress.approvalStatus === 'approved');
   const withoutSubmission = allProgress.filter(progress => progress.approvalStatus !== 'pending' && progress.approvalStatus !== 'approved');
@@ -152,20 +168,29 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onReviewTeam, onClo
             <p className="rounded-lg border border-amber-400/20 bg-slate-900/60 p-4 text-cyan-100/70 shadow">No hay planes pendientes.</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {pendingReview.map((progress) => (
-                <article key={progress.teamId} className="rounded-lg border border-amber-400/30 bg-slate-900/60 p-4 shadow">
-                  <h3 className="text-lg font-semibold text-white">{progress.teamName}</h3>
-                  <p className="text-sm text-cyan-100/80">Grupo: {progress.groupId}</p>
-                  <p className="text-xs text-cyan-200/60">Ultima actualizacion: {new Date(progress.lastUpdated).toLocaleString()}</p>
-                  <button
-                    type="button"
-                    onClick={() => onReviewTeam(progress.teamId)}
-                    className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-300"
-                  >
-                    Revisar plan
-                  </button>
-                </article>
-              ))}
+              {pendingReview.map((progress) => {
+                const projectDefinition = resolveProjectDefinition(progress);
+                const totalModules = totalModulesFor(progress);
+                return (
+                  <article key={progress.teamId} className="rounded-lg border border-amber-400/30 bg-slate-900/60 p-4 shadow">
+                    <h3 className="text-lg font-semibold text-white">{progress.teamName}</h3>
+                    <p className="text-sm text-cyan-100/80">Grupo: {progress.groupId}</p>
+                    <p className="text-xs text-cyan-200/70">Proyecto: {projectDefinition ? projectDefinition.title : 'Pendiente de seleccion'}</p>
+                    <p className="text-xs text-cyan-200/60">Avance: {progress.completedModules} de {totalModules}</p>
+                    <p className="text-xs text-cyan-200/60">Ultima actualizacion: {new Date(progress.lastUpdated).toLocaleString()}</p>
+                    {projectDefinition ? (
+                      <p className="mt-2 text-xs text-cyan-200/50">{projectDefinition.summary}</p>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => onReviewTeam(progress.teamId)}
+                      className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-300"
+                    >
+                      Revisar plan
+                    </button>
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>
@@ -176,35 +201,52 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onReviewTeam, onClo
             <p className="rounded-lg border border-emerald-400/20 bg-slate-900/60 p-4 text-cyan-100/70 shadow">Aun no hay planes aprobados.</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {approvedTeams.map((progress) => (
+              {approvedTeams.map((progress) => {
+              const projectDefinition = resolveProjectDefinition(progress);
+              const totalModules = totalModulesFor(progress);
+              return (
                 <article key={progress.teamId} className="rounded-lg border border-emerald-400/40 bg-slate-900/60 p-4 shadow">
                   <h3 className="text-lg font-semibold text-white">{progress.teamName}</h3>
                   <p className="text-sm text-cyan-100/80">Grupo: {progress.groupId}</p>
+                  <p className="text-xs text-cyan-200/70">Proyecto: {projectDefinition ? projectDefinition.title : 'Pendiente de seleccion'}</p>
+                  <p className="text-xs text-cyan-200/60">Avance: {progress.completedModules} de {totalModules}</p>
                   <p className="text-xs text-cyan-200/60">Ultima revision: {new Date(progress.lastUpdated).toLocaleDateString()}</p>
+                  {projectDefinition ? (
+                    <p className="mt-2 text-xs text-cyan-200/50">{projectDefinition.summary}</p>
+                  ) : null}
                 </article>
-              ))}
-            </div>
-          )}
-        </section>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
-        <section className="space-y-4">
+      <section className="space-y-4">
           <h2 className="text-xl font-semibold text-white">Equipos sin enviar plan</h2>
           {withoutSubmission.length === 0 ? (
             <p className="rounded-lg border border-slate-500/20 bg-slate-900/60 p-4 text-cyan-100/70 shadow">Todos los equipos han enviado su plan o estan en revision.</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {withoutSubmission.map((progress) => (
+              {withoutSubmission.map((progress) => {
+              const projectDefinition = resolveProjectDefinition(progress);
+              const totalModules = totalModulesFor(progress);
+              return (
                 <article key={progress.teamId} className="rounded-lg border border-slate-500/30 bg-slate-900/60 p-4 shadow">
                   <h3 className="text-lg font-semibold text-white">{progress.teamName}</h3>
                   <p className="text-sm text-cyan-100/80">Grupo: {progress.groupId}</p>
-                  <p className="text-xs text-cyan-200/60">Avance: {progress.completedModules} de {MODULE_COUNT}</p>
+                  <p className="text-xs text-cyan-200/70">Proyecto: {projectDefinition ? projectDefinition.title : 'Pendiente de seleccion'}</p>
+                  <p className="text-xs text-cyan-200/60">Avance: {progress.completedModules} de {totalModules}</p>
+                  {projectDefinition ? (
+                    <p className="mt-2 text-xs text-cyan-200/50">{projectDefinition.summary}</p>
+                  ) : null}
                 </article>
-              ))}
-            </div>
-          )}
-        </section>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
-        <section className="space-y-4">
+      <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">Historial de sesiones guardadas</h2>
             <button
@@ -249,7 +291,6 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onReviewTeam, onClo
   );
 };
 
-const MODULE_COUNT = MODULES.length;
 
 export default TeacherDashboard;
 

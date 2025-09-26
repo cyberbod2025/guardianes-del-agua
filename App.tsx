@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import './style.css';
 import IntroSequence from './components/IntroSequence';
 import LoginScreen from './components/LoginScreen';
 import ProjectJourney from './components/ProjectJourney';
 import TeacherDashboard from './components/TeacherDashboard';
 import ReviewScreen from './components/ReviewScreen';
-import { MODULES } from './constants';
+import { getModulesForProject, getProjectDefinition } from './constants';
 import type { SessionLogEntry, Team, TeamProgress } from './types';
 
 type AppView = 'intro' | 'login' | 'journey' | 'teacherDashboard' | 'teacherReview';
@@ -120,6 +120,19 @@ const App: React.FC = () => {
     setView('login');
   }, []);
 
+  const modulesForActiveTeam = useMemo(
+    () => getModulesForProject(activeProgress?.projectId),
+    [activeProgress?.projectId],
+  );
+
+  const activeProjectDefinition = useMemo(() => {
+    if (!activeProgress?.projectId) {
+      return null;
+    }
+    const definition = getProjectDefinition(activeProgress.projectId);
+    return definition ?? null;
+  }, [activeProgress?.projectId]);
+
   if (view === 'intro') {
     return <IntroSequence onComplete={() => setView('login')} />;
   }
@@ -156,7 +169,8 @@ const App: React.FC = () => {
       <ProjectJourney
         team={activeTeam}
         progress={activeProgress}
-        modules={MODULES}
+        modules={modulesForActiveTeam}
+        project={activeProjectDefinition}
         onProgressChange={updateActiveProgress}
         onLogout={handleLogout}
         onFinishSession={handleFinishSession}

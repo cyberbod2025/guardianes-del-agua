@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
 import type { ModuleContent, ModuleData, ModuleStatus, StoredFile, Team, TeamProgress } from '../types';
+import type { ProjectDefinition } from '../constants';
+
 import Module from './Module';
 import ProgressBar from './ProgressBar';
 
@@ -7,6 +9,7 @@ interface ProjectJourneyProps {
   team: Team;
   progress: TeamProgress;
   modules: ModuleContent[];
+  project?: ProjectDefinition | null;
   onProgressChange: (updater: (current: TeamProgress) => TeamProgress) => void;
   onLogout: () => void;
   onFinishSession: () => void;
@@ -68,11 +71,13 @@ const getStatusLabel = (status: TeamProgress['approvalStatus']) => {
   }
 };
 
-const ProjectJourney: React.FC<ProjectJourneyProps> = ({ team, progress, modules, onProgressChange, onLogout, onFinishSession }) => {
+const ProjectJourney: React.FC<ProjectJourneyProps> = ({ team, progress, modules, project, onProgressChange, onLogout, onFinishSession }) => {
   const clampedCompleted = Math.min(progress.completedModules, modules.length);
   const isAwaitingApproval = progress.approvalStatus === 'pending';
   const isApproved = progress.approvalStatus === 'approved';
   const isFrozen = isAwaitingApproval || isApproved;
+
+  const projectAccentStyle = project ? { borderColor: project.color } : undefined;
 
   const moduleStatuses: ModuleStatus[] = useMemo(() => {
     return modules.map((module, index) => {
@@ -175,6 +180,21 @@ const ProjectJourney: React.FC<ProjectJourneyProps> = ({ team, progress, modules
 
       <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 pt-10 pb-12">
         <section className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-6 shadow-xl backdrop-blur">
+          {project ? (
+            <div
+              className="mb-6 rounded-xl border px-4 py-3 text-sm text-cyan-100/80"
+              style={projectAccentStyle}
+            >
+              <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/70">Proyecto seleccionado</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">{project.title}</h2>
+              <p className="mt-1 text-sm text-cyan-100/80">{project.mission}</p>
+              <p className="mt-2 text-xs text-cyan-100/60">{project.summary}</p>
+            </div>
+          ) : (
+            <div className="mb-6 rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+              Seleccionen su proyecto con la autorizacion del docente para ver las misiones especiales.
+            </div>
+          )}
           <ProgressBar modules={modules} completedModules={clampedCompleted} />
           <div className={`mt-4 rounded-lg px-4 py-3 text-sm font-medium ${statusDisplay.tone}`}>
             {statusDisplay.label}

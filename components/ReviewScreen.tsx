@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { MODULES } from '../constants';
-import type { Database, FormInput, StoredFile, Team, TeamProgress } from '../types';
+import React, { useEffect, useMemo, useState } from 'react';
+import { getModulesForProject, getProjectDefinition } from '../constants';
+import type { Database, FormInput, ModuleContent, StoredFile, Team, TeamProgress } from '../types';
 
 interface ReviewScreenProps {
   teamId: string;
@@ -23,6 +23,10 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ teamId, onBack }) => {
   const [progress, setProgress] = useState<TeamProgress | null>(null);
   const [feedback, setFeedback] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const modules = useMemo(() => getModulesForProject(progress?.projectId), [progress?.projectId]);
+
+  const projectDefinition = progress?.projectId ? getProjectDefinition(progress.projectId) : null;
+
 
   useEffect(() => {
     const loadData = async () => {
@@ -92,16 +96,14 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ teamId, onBack }) => {
     onBack();
   };
 
-  const renderModuleAnswers = (moduleId: number) => {
-    const module = MODULES.find((item) => item.id === moduleId);
-    const data = progress?.data[moduleId];
+  const renderModuleAnswers = (module: ModuleContent) => {
+    const data = progress?.data[module.id];
 
     if (!module) {
-      return <p key={moduleId}>Modulo no encontrado.</p>;
     }
 
     return (
-      <div key={moduleId} className="mb-8">
+      <div key={module.id} className="mb-8">
         <h3 className="text-xl font-semibold text-slate-900 border-b border-blue-200 pb-2 mb-4">{module.title}</h3>
         <div className="space-y-4">
           {module.content
@@ -169,10 +171,17 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ teamId, onBack }) => {
           <p className="text-sm text-slate-600">Grupo {team.groupId}</p>
         </header>
 
-        <section className="mt-8">
-          {renderModuleAnswers(1)}
-          {renderModuleAnswers(2)}
-          {renderModuleAnswers(3)}
+        <section className="mt-8 space-y-6">
+          <div className="rounded-lg border border-cyan-300/40 bg-cyan-500/10 p-4 text-sm text-slate-700">
+            <p className="text-xs uppercase tracking-[0.3em] text-cyan-600">Proyecto seleccionado</p>
+            <h2 className="mt-1 text-lg font-semibold text-slate-900">
+              {projectDefinition ? projectDefinition.title : 'Pendiente de seleccion'}
+            </h2>
+            <p className="mt-2 text-sm text-slate-700">
+              {projectDefinition ? projectDefinition.mission : 'Asigna un proyecto desde el acceso del equipo para ver las misiones especiales.'}
+            </p>
+          </div>
+          {modules.map((module) => renderModuleAnswers(module))}
         </section>
 
         <section className="mt-8 space-y-3">
