@@ -1,3 +1,14 @@
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
@@ -162,6 +173,7 @@ h1, h2 {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid #00BFFF;
     box-shadow: 0 0 5px #00BFFF, 0 0 10px #00BFFF, inset 0 0 5px #00BFFF;
+    -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
     border-radius: 12px;
     padding: 1.5rem;
@@ -173,6 +185,7 @@ h1, h2 {
     background: rgba(0, 0, 0, 0.4);
     border: 2px solid #FFC107;
     box-shadow: 0 0 3px #FFC107, 0 0 8px #FFC107, inset 0 0 3px #FFC107;
+    -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
     border-radius: 12px;
     padding: 1rem 1.5rem;
@@ -220,11 +233,14 @@ textarea, input[type="text"], select {
     color: #FFFFFF;
     font-size: 1rem;
     margin-top: 1rem;
-    min-height: 50px;
+}
+
+textarea {
+    min-height: 120px;
 }
 
 input[type="text"], select {
-    min-height: auto;
+    min-height: 48px;
     margin-bottom: 1rem;
 }
 
