@@ -100,7 +100,7 @@ const Module: React.FC<ModuleProps> = ({
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, name, value } = event.target;
-    const fieldKey = id || name;
+    const fieldKey = name || id;
     if (!fieldKey) {
       return;
     }
@@ -110,22 +110,29 @@ const Module: React.FC<ModuleProps> = ({
   };
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value, checked } = event.target;
-    const currentValues = (formData[id] as string[] | undefined) || [];
-    if (checked) {
-      setFormData((prev) => ({ ...prev, [id]: [...currentValues, value] }));
-    } else {
-      setFormData((prev) => ({ ...prev, [id]: currentValues.filter((option) => option !== value) }));
+    const { id, name, value, checked } = event.target;
+    const fieldKey = name || id;
+    if (!fieldKey) {
+      return;
     }
+    const currentValues = (formData[fieldKey] as string[] | undefined) || [];
+    const nextValues = checked
+      ? (currentValues.includes(value) ? currentValues : [...currentValues, value])
+      : currentValues.filter((option) => option !== value);
+    setFormData((prev) => ({ ...prev, [fieldKey]: nextValues }));
     setError(null);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, files } = event.target;
+    const { id, name, files } = event.target;
+    const fieldKey = name || id;
+    if (!fieldKey) {
+      return;
+    }
     if (files && files.length > 0) {
-      setFormData((prev) => ({ ...prev, [id]: files[0] }));
+      setFormData((prev) => ({ ...prev, [fieldKey]: files[0] }));
     } else {
-      setFormData((prev) => ({ ...prev, [id]: null }));
+      setFormData((prev) => ({ ...prev, [fieldKey]: null }));
     }
     setError(null);
   };
@@ -419,48 +426,64 @@ const Module: React.FC<ModuleProps> = ({
       case 'radio':
         return (
           <fieldset key={inputField.id} className="space-y-2">
-            {label}
+            <legend className="text-sm font-semibold text-cyan-100">
+              {inputField.label}
+            </legend>
             <div className="flex flex-wrap gap-3">
-              {inputField.options?.map((option) => (
-                <label key={option} className="flex items-center gap-2 text-sm text-cyan-100/80">
-                  <input
-                    type="radio"
-                    name={inputField.id}
-                    value={option}
-                    checked={value === option}
-                    onChange={handleInputChange}
-                    disabled={isFrozen}
-                  />
-                  {option}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        );
-      case 'checkbox':
-        return (
-          <fieldset key={inputField.id} className="space-y-2">
-            {label}
-            <div className="flex flex-wrap gap-3">
-              {inputField.options?.map((option) => {
-                const selected = Array.isArray(value) ? value.includes(option) : false;
+              {inputField.options?.map((option, index) => {
+                const optionId = `${inputField.id}-${index}`;
                 return (
-                  <label key={option} className="flex items-center gap-2 text-sm text-cyan-100/80">
+                  <div key={optionId} className="flex items-center gap-2 text-sm text-cyan-100/80">
                     <input
-                      type="checkbox"
-                      id={inputField.id}
+                      id={optionId}
+                      type="radio"
+                      name={inputField.id}
                       value={option}
-                      checked={selected}
-                      onChange={handleCheckboxChange}
+                      checked={value === option}
+                      onChange={handleInputChange}
                       disabled={isFrozen}
                     />
-                    {option}
-                  </label>
+                    <label htmlFor={optionId} className="cursor-pointer">
+                      {option}
+                    </label>
+                  </div>
                 );
               })}
             </div>
           </fieldset>
         );
+
+      case 'checkbox':
+        return (
+          <fieldset key={inputField.id} className="space-y-2">
+            <legend className="text-sm font-semibold text-cyan-100">
+              {inputField.label}
+            </legend>
+            <div className="flex flex-wrap gap-3">
+              {inputField.options?.map((option, index) => {
+                const optionId = `${inputField.id}-${index}`;
+                const selected = Array.isArray(value) ? value.includes(option) : false;
+                return (
+                  <div key={optionId} className="flex items-center gap-2 text-sm text-cyan-100/80">
+                    <input
+                      id={optionId}
+                      type="checkbox"
+                      name={inputField.id}
+                      value={option}
+                      checked={selected}
+                      onChange={handleCheckboxChange}
+                      disabled={isFrozen}
+                    />
+                    <label htmlFor={optionId} className="cursor-pointer">
+                      {option}
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
+          </fieldset>
+        );
+
       case 'file':
         return (
           <div key={inputField.id} className="space-y-2">
@@ -611,6 +634,4 @@ const Module: React.FC<ModuleProps> = ({
 };
 
 export default Module;
-
-
 
