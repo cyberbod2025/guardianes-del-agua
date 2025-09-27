@@ -99,10 +99,14 @@ const Module: React.FC<ModuleProps> = ({
   }, []);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { id, value } = event.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+    const { id, name, value } = event.target;
+    const fieldKey = id || name;
+    if (!fieldKey) {
+      return;
+    }
+    setFormData((prev) => ({ ...prev, [fieldKey]: value }));
     setError(null);
-    setAiState((prev) => ({ ...prev, [id]: { loading: false, error: null } }));
+    setAiState((prev) => ({ ...prev, [fieldKey]: { loading: false, error: null } }));
   };
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -607,5 +611,6 @@ const Module: React.FC<ModuleProps> = ({
 };
 
 export default Module;
+
 
 
